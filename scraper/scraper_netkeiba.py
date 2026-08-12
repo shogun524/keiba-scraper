@@ -22,6 +22,7 @@ import time
 import random
 import json
 import logging
+import re
 import datetime
 from pathlib import Path
 
@@ -58,8 +59,16 @@ def scrape_race(page, race_id: str) -> str | None:
         return None
 
     body_text = page.inner_text("body")
-    # 「該当レース無し」時の判定は暫定的。実際の画面表示を見て調整してください。
+    # 「該当レース無し」判定。以下のいずれかに該当する場合はデータ無しとみなす:
+    #  - URLパラメータエラー
+    #  - ページ自体が極端に短い
+    #  - 「レース前日14時頃公開です。」= まだ出馬表が発表されていない
+    #  - 実際の出走馬データ(枠番+馬番+"--"のパターン)が1件も見つからない
     if "empty paramter" in body_text or len(body_text) < 500:
+        return None
+    if "レース前日14時頃公開です" in body_text:
+        return None
+    if not re.search(r'^\d{1,2}\n\d{1,2}\n--$', body_text, re.MULTILINE):
         return None
     return body_text
 
