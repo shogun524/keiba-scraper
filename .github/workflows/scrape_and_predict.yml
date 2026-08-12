@@ -1,0 +1,52 @@
+name: 南関東競馬 出馬表スクレイピング&予想
+
+on:
+  schedule:
+    # 毎日 21:00 JST (12:00 UTC) に翌日の出馬表を取得
+    # 馬体重を使わないモデルなので、前日発表後ならいつでも実行可能
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "取得対象日 (YYYY-MM-DD、空なら翌日)"
+        required: false
+        default: ""
+
+jobs:
+  scrape-and-predict:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存パッケージインストール
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: スクレイピング実行
+        working-directory: scraper
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then
+            DATE=$(date -d "+1 day" +%Y-%m-%d)
+          fi
+          python scraper_netkeiba.py --date "$DATE"
+
+      - name: 予想実行
+        working-directory: model
+        run: |
+          for f in ../scraper/scraped_data/*_racecards_raw.jsonl; do
+            python predict.py --input "$f"
+          done
+
+      - name: 結果をコミット
+        run: |
+          git config user.name "keiba-ai-bot"
+          git config user.email "bot@example.com"
+          git add scraper/scraped_data/
+          git diff --cached --quiet || git commit -m "自動取得: $(date +%Y-%m-%d)"
+          git push
