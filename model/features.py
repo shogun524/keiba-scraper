@@ -38,21 +38,19 @@ def horse_to_feature_row(horse: dict, race: dict) -> dict:
     レース共通情報(race: track/distance/surface/grade/headcount)から
     モデル入力用の1行を作る。
 
-    現状、netkeiba_parser.py は現在レースの静的項目(枠・馬番・性齢・斤量・
-    通算成績・人気・脚質・休養週数)は安定して抽出できますが、直近5走の
-    詳細(人気推移・着差推移・上がり3F推移・通過順推移)についてはまだ
-    Python側の解析ロジックが未整備です(ブラウザ版ツールのJS実装が先行しています)。
-    そのため、以下の直近5走系フィールドは現状 None(欠損)のまま渡しており、
-    LightGBM側は欠損値を自動的に処理します(精度はやや下がりますが動作はします)。
-
-    TODO: nar_fullpage_parser.js の parseDetailedPastRaces 相当のロジックを
-    netkeiba形式向けに実装し、last_ninki 等を実値で埋める。
+    horse['recent_form'] に netkeiba_recent_form.build_recent_form_features() の
+    出力(last_ninki, avg5_ninki, avg5_margin, avg5_last3f, avg5_corner_* 等)が
+    入っていればそれを使い、無ければ欠損値(None)のまま渡す
+    (LightGBM側が自動的に処理する)。
     """
     starts, winrate, top3rate = career_record_to_stats(horse.get('career_record'))
 
-    # 「中N週」の休養情報を days_since_last の粗い近似として使う(1週=7日)
     weeks = horse.get('weeks_since_last')
     days_since_last = weeks * 7 if weeks is not None else None
+
+    rf = horse.get('recent_form', {}) or {}
+
+    same_track_as_last = None
 
     return {
         '枠_x': horse.get('waku'),
@@ -62,20 +60,20 @@ def horse_to_feature_row(horse: dict, race: dict) -> dict:
         'distance_main': race.get('distance'),
         '頭数_real': race.get('headcount'),
         'days_since_last': days_since_last,
-        'last_ninki': None,      # TODO: 直近5走詳細パーサー実装後に接続
-        'avg5_ninki': None,      # TODO
-        'last_margin': None,     # TODO
-        'avg5_margin': None,     # TODO
-        'avg5_last3f': None,     # TODO
-        'avg5_headcount': None,  # TODO
-        'same_track_as_last': None,  # TODO
-        'n_past_races': None,        # TODO
+        'last_ninki': rf.get('last_ninki'),
+        'avg5_ninki': rf.get('avg5_ninki'),
+        'last_margin': rf.get('last_margin'),
+        'avg5_margin': rf.get('avg5_margin'),
+        'avg5_last3f': rf.get('avg5_last3f'),
+        'avg5_headcount': rf.get('avg5_headcount'),
+        'same_track_as_last': same_track_as_last,
+        'n_past_races': rf.get('n_past_races'),
         'career_starts': starts,
         'career_winrate': winrate,
         'career_top3rate': top3rate,
-        'avg5_corner_first': None,  # TODO
-        'avg5_corner_last': None,   # TODO
-        'avg5_corner_gain': None,   # TODO
+        'avg5_corner_first': rf.get('avg5_corner_first'),
+        'avg5_corner_last': rf.get('avg5_corner_last'),
+        'avg5_corner_gain': rf.get('avg5_corner_gain'),
         '場所': race.get('track'),
         '性': horse.get('sei'),
         'surface_main': race.get('surface'),
