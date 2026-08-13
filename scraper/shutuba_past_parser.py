@@ -30,16 +30,25 @@ newspaper.html と違い、プレミアム会員でなくても全頭分の直�
 import re
 
 HORSE_ANCHOR = re.compile(r'^(\d{1,2})\t(\d{1,2})\t?$')
-PAST_RACE_ANCHOR = re.compile(r'^(\d{4})\.(\d{2})\.(\d{2})\s+(\D+?)(\d+|取)$')
+PAST_RACE_ANCHOR = re.compile(r'^(\d{4})\.(\d{2})\.(\d{2})\s+(\S+)$')
+RACE_NUM_LINE = re.compile(r'^(\d+|取)$')
 RESULT_LINE = re.compile(r'^(\d+)頭\s+(\d+)番\s+(\d+)人\s+(\S+)\s+([\d.]+)$')
 COURSE_LINE = re.compile(r'^(ダ|芝)(\d+)(?:\s+(\d+:[\d.]+|[\d.]+))?\s*(良|稍重|稍|重|不良|不)?$')
 CORNER_LINE = re.compile(r'^([\d\-]+)?\s*\(([\d.]+)\)\s*(\d+)?\(([+-]?\d+)\)?$')
 MARGIN_LINE = re.compile(r'^(\S+?)\(([+-]?[\d.]+)\)$')
 
 
+def _filter_blank(lines: list[str]) -> list[str]:
+    """空行・タブのみの行を除去する(Playwrightの描画で挿入される空要素対策)。
+    ただし馬ブロックの区切りに使う空行(2頭の間の完全な空行)は元々1個だけなので、
+    ここで全部除去しても情報は失われない。"""
+    return [l for l in lines if l.strip() != '']
+
+
 def split_horse_blocks(text: str) -> list[list[str]]:
-    """全選択テキストを1頭ずつのブロック(行リスト)に分割する"""
-    lines = text.replace('\r\n', '\n').split('\n')
+    """全選択テキストを1頭ずつのブロック(行リスト)に分割する。
+    空行は先に全て除去する(Playwrightのレンダリングで挿入される空要素対策)。"""
+    lines = _filter_blank(text.replace('\r\n', '\n').split('\n'))
     starts = []
     for i in range(len(lines) - 1):
         if HORSE_ANCHOR.match(lines[i]) and lines[i + 1].strip() == '--':
@@ -72,17 +81,29 @@ def parse_horse_static(block: list[str]) -> dict:
         'sire': sire, 'dam': dam, 'broodmare_sire': bms,
     }
 
-    # 6行目以降、脚質・オッズ・性齢毛色・騎手・斤量を順に走査
-    # (厩舎行の有無等でズレることがあるため、パターンマッチで柔軟に探す)
+    # 6行目以降、脚質・オッズ・性齢毛色・騎手・斤量を順に走査。
+    # 過去走の最初のアンカー(日付行)が来るまでを走査範囲とする(空行除去で
+    # 行数が変動するため固定オフセットではなく動的に決める)。
     idx = 6
-    scan_end = min(idx + 6, len(block))
+    scan_end = len(block)
+    for i in range(idx, len(block)):
+        if PAST_RACE_ANCHOR.match(block[i].strip()):
+            scan_end = i
+            break
     for i in range(idx, scan_end):
         line = block[i].strip()
-        rs_m = re.match(r'^(逃|先|差|追)中(\d+)週$', line)
-        if rs_m:
-            result['running_style'] = rs_m.group(1)
-            result['weeks_since_last'] = int(rs_m.group(2))
+        rs_combined = re.match(r'^(逃|先|差|追)中(\d+)週$', line)
+        if rs_combined:
+            result['running_style'] = rs_combined.group(1)
+            result['weeks_since_last'] = int(rs_combined.group(2))
             continue
+        rs_style_only = re.match(r'^(逃|先|差|追)$', line)
+        if rs_style_only and i + 1 < scan_end:
+            weeks_m = re.match(r'^中(\d+)週$', block[i + 1].strip())
+            if weeks_m:
+                result['running_style'] = rs_style_only.group(1)
+                result['weeks_since_last'] = int(weeks_m.group(1))
+                continue
         odds_m = re.match(r'^([\d.]+)\s*\((\d+)人気\)$', line)
         if odds_m:
             result['odds'] = float(odds_m.group(1))
@@ -115,15 +136,15 @@ def parse_past_races(block: list[str], max_races: int = 5) -> list[dict]:
 
     races = []
     for n, (idx, m) in enumerate(anchor_positions[:max_races]):
-        end = anchor_positions[n + 1][0] if n + 1 < len(anchor_positions) else min(idx + 8, len(block))
+        end = anchor_positions[n + 1][0] if n + 1 < len(anchor_positions) else min(idx + 9, len(block))
         window = [l.strip() for l in block[idx:end]]
 
-        yyyy, mm, dd, track, race_num = m.groups()
-        rec = {
-            'date': f'{yyyy}-{mm}-{dd}',
-            'track': track.strip(),
-            'scratched': race_num == '取',
-        }
+        yyyy, mm, dd, track = m.groups()
+        rec = {'date': f'{yyyy}-{mm}-{dd}', 'track': track, 'scratched': False}
+
+        # レース番号は次の行に単独で来る(取消の場合は"取")
+        if len(window) > 1 and RACE_NUM_LINE.match(window[1]):
+            rec['scratched'] = window[1] == '取'
 
         for line in window[1:]:
             cm = COURSE_LINE.match(line)
