@@ -53,17 +53,17 @@ def scrape_race(page, race_id: str) -> str | None:
     """1レース分のページをレンダリングしてテキスト化する"""
     url = f"{BASE_URL}?race_id={race_id}"
     try:
-        page.goto(url, timeout=20000, wait_until="networkidle")
+        # networkidle は、裏で継続的な通信(広告・アクセス解析・AI予想の非同期更新等)が
+        # あるサイトだと永遠に待ち続けてタイムアウトすることがあるため、
+        # domcontentloaded(HTML自体の読み込み完了)を待つ方式に変更。
+        # その後、Reactなどによる描画が終わるまで少し待つ。
+        page.goto(url, timeout=30000, wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
     except Exception as e:
         logger.warning(f"読み込み失敗: {url} - {e}")
         return None
 
     body_text = page.inner_text("body")
-    # 「該当レース無し」判定。以下のいずれかに該当する場合はデータ無しとみなす:
-    #  - URLパラメータエラー
-    #  - ページ自体が極端に短い
-    #  - 「レース前日14時頃公開です。」= まだ出馬表が発表されていない
-    #  - 実際の出走馬データ(枠番+馬番+"--"のパターン)が1件も見つからない
     if "empty paramter" in body_text or len(body_text) < 500:
         return None
     if "レース前日14時頃公開です" in body_text:
