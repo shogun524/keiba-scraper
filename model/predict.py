@@ -2,22 +2,33 @@
 スクレイピング済み出馬表(scraper_netkeiba.py の出力 .jsonl)を読み込み、
 実際にモデルでスコアリングして予想結果CSVを出力する。
 
+shutuba_past.html 形式(プレミアム制限なし・全頭直近5走詳細取得可)に対応。
+
 使い方:
     python predict.py --input scraped_data/2026-08-14_racecards_raw.jsonl
 """
 import sys
 import json
+import re
 from pathlib import Path
 
 import pandas as pd
 import lightgbm as lgb
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scraper"))
-from netkeiba_parser import parse_race_card, split_horse_blocks  # noqa: E402
-from netkeiba_recent_form import parse_past_races_netkeiba, build_recent_form_features  # noqa: E402
-from features import ALL_FEATURES, FEATURE_COLS_CATEGORICAL, horse_to_feature_row  # noqa: E402
+from shutuba_past_parser import parse_race_card  # noqa: E402
 
 MODEL_DIR = Path(__file__).parent
+
+FEATURE_COLS_NUMERIC = [
+    '枠_x', '馬番', '齢', '斤量', 'distance_main', '頭数_real',
+    'days_since_last', 'last_ninki', 'avg5_ninki', 'last_margin', 'avg5_margin',
+    'avg5_last3f', 'avg5_headcount', 'same_track_as_last', 'n_past_races',
+    'career_starts', 'career_winrate', 'career_top3rate',
+    'avg5_corner_first', 'avg5_corner_last', 'avg5_corner_gain',
+]
+FEATURE_COLS_CATEGORICAL = ['場所', '性', 'surface_main', 'レースの格']
+ALL_FEATURES = FEATURE_COLS_NUMERIC + FEATURE_COLS_CATEGORICAL
 
 
 def load_models():
@@ -28,39 +39,58 @@ def load_models():
 
 def guess_race_meta(raw_text: str, track: str) -> dict:
     """レース共通情報(距離・コース種別・クラス・頭数)を推測する。"""
-    import re
     meta = {"track": track, "surface": "ダ", "distance": None, "grade": "未格付", "headcount": None}
-    m = re.search(r'ダ(\d+)', raw_text)
+    m = re.search(r'(ダ|芝)(\d+)m', raw_text)
     if m:
-        meta["distance"] = float(m.group(1))
-    m = re.search(r'\((C[123]|B[123]|A[123]|OP|新馬|Jpn[123]|重賞)\)', raw_text)
+        meta["surface"] = m.group(1)
+        meta["distance"] = float(m.group(2))
+    m = re.search(r'サラ系\S*\s+(新馬|OP|Jpn[123]|重賞|[ABC][123])', raw_text)
     if m:
         meta["grade"] = m.group(1)
     return meta
+
+
+def horse_to_feature_row(horse: dict, race: dict) -> dict:
+    rf = horse.get('recent_form', {}) or {}
+    weeks = horse.get('weeks_since_last')
+    days_since_last = weeks * 7 if weeks is not None else None
+    same_track_as_last = None
+    if rf.get('most_recent_track') and race.get('track'):
+        same_track_as_last = int(rf['most_recent_track'] == race['track'])
+
+    return {
+        '枠_x': horse.get('waku'),
+        '馬番': horse.get('umaban'),
+        '齢': horse.get('rei'),
+        '斤量': horse.get('kinryo'),
+        'distance_main': race.get('distance'),
+        '頭数_real': race.get('headcount'),
+        'days_since_last': days_since_last,
+        'last_ninki': rf.get('last_ninki'),
+        'avg5_ninki': rf.get('avg5_ninki'),
+        'last_margin': rf.get('last_margin'),
+        'avg5_margin': rf.get('avg5_margin'),
+        'avg5_last3f': rf.get('avg5_last3f'),
+        'avg5_headcount': rf.get('avg5_headcount'),
+        'same_track_as_last': same_track_as_last,
+        'n_past_races': rf.get('n_past_races'),
+        'career_starts': None,
+        'career_winrate': None,
+        'career_top3rate': None,
+        'avg5_corner_first': rf.get('avg5_corner_first'),
+        'avg5_corner_last': rf.get('avg5_corner_last'),
+        'avg5_corner_gain': rf.get('avg5_corner_gain'),
+        '場所': race.get('track'),
+        '性': horse.get('sei'),
+        'surface_main': race.get('surface'),
+        'レースの格': race.get('grade'),
+    }
 
 
 def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model) -> pd.DataFrame:
     horses = parse_race_card(raw_text)
     if not horses:
         return pd.DataFrame()
-
-    # 直近5走の詳細特徴量を各馬にマージする(ブロックを再分割して馬番で対応付け)
-    blocks = split_horse_blocks(raw_text)
-    block_by_umaban = {}
-    for block in blocks:
-        if len(block) >= 2 and block[0].strip().isdigit() and block[1].strip().isdigit() and \
-                len(block) >= 3 and block[2].strip() == '--':
-            block_by_umaban[int(block[1])] = block
-        elif block[0].strip().isdigit() and len(block) >= 2 and block[1].strip() == '--':
-            block_by_umaban[int(block[0])] = block
-
-    for h in horses:
-        block = block_by_umaban.get(h.get('umaban'))
-        if block:
-            races = parse_past_races_netkeiba(block)
-            h['recent_form'] = build_recent_form_features(races)
-        else:
-            h['recent_form'] = {}
 
     race_meta = guess_race_meta(raw_text, track)
     race_meta["headcount"] = len(horses)
