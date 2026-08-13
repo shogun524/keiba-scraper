@@ -34,7 +34,7 @@ jobs:
           if [ -z "$DATE" ]; then
             DATE=$(date -d "+1 day" +%Y-%m-%d)
           fi
-          python scraper_netkeiba.py --date "$DATE"
+          python scraper_netkeiba_debug.py --date "$DATE"
 
       - name: 予想実行
         working-directory: model
@@ -42,6 +42,13 @@ jobs:
           for f in ../scraper/scraped_data/*_racecards_raw.jsonl; do
             python predict.py --input "$f"
           done
+
+      - name: デバッグ用スクリーンショットをアーティファクト保存
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: scraper/debug_screenshots/
+          if-no-files-found: ignore
 
       - name: 結果をコミット
         run: |
