@@ -33,7 +33,7 @@ logger = logging.getLogger("nar_netkeiba_scraper")
 
 TRACK_CODES = {"浦和": "42", "船橋": "43", "大井": "44", "川崎": "45"}
 BASE_URL = "https://nar.netkeiba.com/race/newspaper.html"
-#REQUEST_INTERVAL_SEC = (3.0, 6.0)  # サーバー負荷を避けるため間隔を空ける
+REQUEST_INTERVAL_SEC = (3.0, 6.0)  # サーバー負荷を避けるため間隔を空ける
 MAX_RACES_PER_DAY = 12
 
 OUTPUT_DIR = Path("scraped_data")
@@ -96,7 +96,7 @@ def scrape_day(date: datetime.date, tracks: list[str] | None = None) -> list[dic
                                      "race_id": race_id, "raw_text": text})
                 else:
                     logger.info("  -> データ無し、または該当レース無し")
-                #time.sleep(random.uniform(*REQUEST_INTERVAL_SEC))
+                time.sleep(random.uniform(*REQUEST_INTERVAL_SEC))
 
         browser.close()
 
