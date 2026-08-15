@@ -67,8 +67,16 @@ python predict.py --input ../scraper/scraped_data/2026-08-14_racecards_raw.jsonl
 
 ## GitHub Actionsでの自動化
 
-`.github/workflows/scrape_and_predict.yml` が毎日21:00 JSTに自動実行し、結果を
-`scraper/scraped_data/` にコミットします。手動実行(Actionsタブ→Run workflow)も可能です。
+`.github/workflows/scrape_and_predict.yml` が毎日21:00 JSTに自動実行し、`scraper/scraped_data/`
+に生データとCSVを、`docs/index.html` に**貼り付け不要で見られる予想ダッシュボード**をコミットします。
+手動実行(Actionsタブ→Run workflow)も可能です。
+
+### ダッシュボードをGitHub Pagesで公開する(推奨)
+
+1. リポジトリの Settings → Pages を開く
+2. Source を「Deploy from a branch」、Branch を `main` / `/docs` に設定して保存
+3. 数分後、`https://{ユーザー名}.github.io/{リポジトリ名}/` で毎朝自動更新される
+   予想一覧が見られるようになります(貼り付け操作は一切不要です)
 
 失敗時は最初のリクエストのスクリーンショットが `debug-screenshots` アーティファクトとして
 保存されるので、実行結果ページ下部から確認できます。

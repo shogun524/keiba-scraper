@@ -3,28 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>南関東競馬AI予想 - 2026-08-15</title>
+<title>南関東競馬AI予想 - 2026-08-13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
   :root{
     --paper:#f7f3ea; --paper-card:#fffdf8; --paper-deep:#efe7d3;
     --ink:#1c1a17; --ink-dim:#6b6558; --ink-faint:#a89f8c;
     --red:#b3272d; --red-dim:#7d1c20; --red-tint:#f7e6e4;
-    --line:#e0d6bd; --gold:#a9832f;
+    --line:#e0d6bd; --gold:#a9832f; --gold-tint:#f5edd9;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--paper);
     color:var(--ink); font-family:'Zen Kaku Gothic New', sans-serif; line-height:1.7; padding:0 0 90px;}
-  .wrap{max-width:900px;margin:0 auto;padding:0 20px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px;}
 
   .hero{padding:46px 20px 26px;text-align:center;border-bottom:3px solid var(--ink);position:relative;}
-  .hero::after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:1px;background:var(--ink);opacity:0.5;}
   .hero .eyebrow{font-family:'DM Mono', monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
     text-transform:uppercase;margin-bottom:12px;font-weight:500;}
-  .hero h1{font-family:'Shippori Mincho', serif;font-weight:800;font-size:30px;margin:0 0 8px;
-    letter-spacing:0.02em;}
+  .hero h1{font-family:'Shippori Mincho', serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
   .hero .updated{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
   .track-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
   .track-nav a{font-family:'Shippori Mincho',serif;font-weight:800;font-size:13px;color:var(--ink);
@@ -32,48 +31,125 @@
   .track-nav a:hover{background:var(--ink);color:var(--paper-card);}
 
   section.track-section{padding:34px 0 8px;border-bottom:1px solid var(--line);}
-  .track-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 18px;
+  .track-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 6px;
     display:flex;align-items:baseline;gap:12px;}
   .track-title .badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--red);
     border:1px solid var(--red); border-radius:20px; padding:2px 10px;}
+  .track-note{font-size:12px;color:var(--ink-dim);background:var(--paper-deep);border-radius:4px;
+    padding:9px 12px;margin-bottom:20px;}
+  .track-note b{color:var(--ink);}
 
   .race-card{background:var(--paper-card);border:1px solid var(--line);border-left:4px solid var(--ink);
     border-radius:2px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(28,26,23,0.04);}
-  .race-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;
-    border-bottom:1px dashed var(--line);padding-bottom:10px;}
+  .race-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
   .race-head .race-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:17px;}
+  .race-head .race-name{font-size:13px;color:var(--ink-dim);margin-left:8px;}
   .race-head .rnum{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
+  .race-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);
+    border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:10px;}
+  .race-sub span{margin-right:14px;}
 
-  table.pred-table{width:100%;border-collapse:collapse;font-size:13.5px;}
-  table.pred-table th{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.04em;color:var(--ink-faint);
-    text-transform:uppercase;text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);}
-  table.pred-table td{padding:8px 6px;border-bottom:1px solid var(--line);}
+  table.pred-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.pred-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.03em;color:var(--ink-faint);
+    text-transform:uppercase;text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);}
+  table.pred-table td{padding:7px 5px;border-bottom:1px solid var(--line);white-space:nowrap;}
   table.pred-table tr:last-child td{border-bottom:none;}
   table.pred-table tr.honmei td{background:var(--red-tint);}
 
-  .umaban{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  .umaban{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;
     border-radius:50%;background:var(--ink);color:var(--paper-card);font-family:'DM Mono',monospace;
-    font-size:12px;font-weight:500;}
+    font-size:11px;font-weight:500;}
   tr.honmei .umaban{background:var(--red);}
 
-  .pick-badge{font-family:'Shippori Mincho',serif;font-weight:800;font-size:11px;color:var(--paper-card);
-    background:var(--red);border-radius:2px;padding:2px 8px;margin-left:6px;letter-spacing:0.05em;}
+  .pick-badge{font-family:'Shippori Mincho',serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
+    background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
-  .bar-cell{display:flex;align-items:center;gap:7px;}
-  .bar-track{width:64px;height:5px;background:var(--paper-deep);border-radius:3px;overflow:hidden;flex-shrink:0;}
+  .bar-cell{display:flex;align-items:center;gap:6px;}
+  .bar-track{width:50px;height:5px;background:var(--paper-deep);border-radius:3px;overflow:hidden;flex-shrink:0;}
   .bar-fill{height:100%;background:var(--red);}
   tr:not(.honmei) .bar-fill{background:var(--ink-faint);}
-  .pct{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);}
+  .pct{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);}
+  .odds-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-dim);}
+
+  .himo-block{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
+  .himo-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.04em;color:var(--ink-faint);
+    text-transform:uppercase;margin-bottom:8px;}
+  .himo-chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .himo-chip{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:11px;
+    border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 4px;background:var(--paper);}
+  .himo-chip .umaban{width:18px;height:18px;font-size:9.5px;}
+  .himo-chip .style-tag{color:var(--ink-dim);font-family:'Zen Kaku Gothic New',sans-serif;font-size:10.5px;}
+  .himo-chip.sashi .style-tag{color:var(--red-dim);}
+  .himo-chip.senko .style-tag{color:var(--gold);}
+
+  .bet-block{margin-top:12px;padding:10px 14px;background:var(--gold-tint);border-radius:4px;
+    border-left:3px solid var(--gold);}
+  .bet-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.04em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:4px;font-weight:500;}
+  .bet-line{font-family:'DM Mono',monospace;font-size:13.5px;color:var(--ink);font-weight:500;}
+  .bet-line .arrow{color:var(--ink-faint);margin:0 4px;}
+
+  .triple-block{background:var(--ink);color:var(--paper-card);border-radius:6px;padding:18px 20px;margin-bottom:20px;}
+  .triple-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
+  .triple-desc{font-size:11.5px;color:#c9c2b0;margin-bottom:14px;}
+  .triple-legs{display:flex;gap:14px;flex-wrap:wrap;}
+  .triple-leg{background:rgba(255,255,255,0.06);border-radius:4px;padding:10px 14px;min-width:110px;}
+  .triple-leg-r{font-family:'DM Mono',monospace;font-size:10px;color:#c9c2b0;margin-bottom:4px;}
+  .triple-leg-bet{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--paper-card);}
+  .triple-leg-bet .arrow{color:var(--gold);margin:0 4px;}
+  .triple-leg-alt{font-family:'DM Mono',monospace;font-size:10px;color:#a89f8c;margin-top:4px;}
 
   .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Shippori Mincho',serif;font-size:15px;}
-  footer{padding:34px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
+  .disclaimer{font-size:11px;color:var(--ink-faint);text-align:center;padding:20px 20px 0;max-width:640px;margin:0 auto;}
+  footer{padding:20px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
+  .table-scroll-hint{display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:4px;}
+
 
   @media (max-width: 480px){
-    .hero h1{font-size:24px;}
-    table.pred-table{font-size:12px;}
-    .bar-track{width:40px;}
+    .hero{padding:32px 16px 20px;}
+    .hero h1{font-size:22px;}
+    .hero .eyebrow{font-size:9.5px;letter-spacing:0.18em;}
+    .track-nav{gap:6px;}
+    .track-nav a{font-size:11.5px;padding:5px 11px;}
+    .track-section{padding:22px 0 4px;}
+    .track-title{font-size:18px;}
+    .race-card{padding:14px 12px;margin-bottom:12px;}
+    .race-head .race-title{font-size:15px;}
+    .race-head .race-name{display:block;margin-left:0;font-size:12px;}
+    .race-sub{font-size:10px;}
+    .race-sub span{margin-right:8px;display:inline-block;}
+    table.pred-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      font-size:11px;white-space:nowrap;}
+    table.pred-table th, table.pred-table td{padding:6px 5px;}
+    .table-scroll-hint{display:block;}
+    .bar-track{width:32px;}
+    .odds-cell{font-size:10px;}
+    .himo-chip-row{gap:5px;}
+    .himo-chip{font-size:10px;padding:2px 8px 2px 3px;}
+    .bet-block, .triple-block{padding:12px 14px;}
   }
+  @media (max-width: 340px){
+    .wrap{padding:0 12px;}
+  }
+
+  .track-block{padding:28px 0;border-bottom:1px solid var(--line);}
+  .track-block-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;}
+  .track-block-head h2{font-family:'Shippori Mincho',serif;font-weight:800;font-size:20px;margin:0;}
+  .track-note-mini{font-size:11.5px;color:var(--ink-dim);margin-bottom:14px;}
+  .race-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));gap:10px;}
+  .race-tile{display:block;background:var(--paper-card);border:1px solid var(--line);border-radius:6px;
+    padding:12px 8px;text-align:center;text-decoration:none;color:var(--ink);
+    transition:transform 0.08s ease;}
+  .race-tile:active{transform:scale(0.96);}
+  .race-tile:hover{border-color:var(--red);}
+  .race-tile .rn{font-family:'Shippori Mincho',serif;font-weight:800;font-size:18px;display:block;}
+  .race-tile .rtime{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);display:block;margin-top:3px;}
+  .race-tile .rhonmei{font-size:10.5px;color:var(--red);display:block;margin-top:4px;font-weight:500;}
+  .top-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .top-links a{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);border:1px solid var(--line);
+    padding:6px 16px;border-radius:20px;text-decoration:none;background:var(--paper-card);}
+  .top-links a:hover{border-color:var(--red);color:var(--red);}
 </style>
 </head>
 <body>
@@ -82,818 +158,46 @@
   <div class="wrap">
     <div class="eyebrow">South Kanto NAR AI · Daily Report</div>
     <h1>南関東競馬AI予想</h1>
-    <div class="updated">2026-08-15 分 · 最終更新: 2026-08-14 13:08</div>
-    <div class="track-nav"><a href="#大井">大井</a></div>
+    <div class="updated">2026-08-13 分 · 最終更新: 2026-08-15 02:33</div>
+    <div class="top-links">
+      <a href="triple.html">トリプル馬単 →</a>
+      <a href="courses.html">コース特徴 →</a>
+    </div>
   </div>
 </div>
 
 <div class="wrap">
 
-        <section class="track-section" id="大井">
-          <h2 class="track-title">大井 <span class="badge">10R</span></h2>
-          
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">1R</span>
-        <span class="rnum">race_id: 202644081501</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">2</span></td>
-          <td>ジコン<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:67%"></div></div><span class="pct">22.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="pct">39.7%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">1</span></td>
-          <td>オリリオ<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">12.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="pct">15.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>リュウグウノユメ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div><span class="pct">10.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">20.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>ブラントンアロー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">10.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">23.7%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">12</span></td>
-          <td>アイトカコイトカ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div><span class="pct">8.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">20.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>ブライトゲイザー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">7.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="pct">19.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>トウキョーバサラ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">6.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">19.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>マルカンプレスト</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="pct">6.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="pct">14.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>マハーギータ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="pct">6.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">10.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>ゴルデューク</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">8.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>ベッティーナ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:6%"></div></div><span class="pct">5.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>ファルコンブラック</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">2.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div><span class="pct">4.4%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">2R</span>
-        <span class="rnum">race_id: 202644081502</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">3</span></td>
-          <td>ツクシ<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div><span class="pct">14.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="pct">28.6%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">8</span></td>
-          <td>エクスプローラー<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><span class="pct">14.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><span class="pct">33.2%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>カズノマリア</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:32%"></div></div><span class="pct">10.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">22.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>ヘニーアイリス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">9.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">22.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>ウルフスタンド</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="pct">9.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">24.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>アネラカイカマヒネ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">8.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">25.7%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ストロングフレイヤ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="pct">5.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div><span class="pct">24.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>ボンマティ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">5.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">12</span></td>
-          <td>ドンナドンナ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">10.2%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">13</span></td>
-          <td>マーナーパス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">4.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">16.7%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>コーントップス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">4.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">10.2%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>ソリタリオカズ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">3.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>スイヘイセン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">1.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">8.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">14</span></td>
-          <td>スターオブウーノ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div><span class="pct">0.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:6%"></div></div><span class="pct">6.1%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">3R</span>
-        <span class="rnum">race_id: 202644081503</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">4</span></td>
-          <td>モンサンマナオラナ<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="pct">45.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">21.2%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">8</span></td>
-          <td>ユウユウザローズ<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="pct">13.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">14.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>キュキュキュート</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div><span class="pct">8.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>モーモールーツ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">8.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.7%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>カチャ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">13.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>ルックライクレイン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>ソレイユダーム</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ダスマパーティ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>ユウユウプロースト</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">5.4%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">4R</span>
-        <span class="rnum">race_id: 202644081504</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">5</span></td>
-          <td>バーナードハンサム<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:62%"></div></div><span class="pct">20.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div><span class="pct">54.7%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">3</span></td>
-          <td>エンリッチザハート<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><span class="pct">19.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><span class="pct">40.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>キャリアラダー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="pct">16.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div><span class="pct">43.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>ミエノワイルド</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:36%"></div></div><span class="pct">12.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">34.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>ノンフィクション</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">10.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">25.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>ローレンモンブラン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">8.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">24.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>フジパールマン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">5.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:25%"></div></div><span class="pct">25.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ナポレオンバディ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>フラワーキングエス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">1.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">8.4%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">5R</span>
-        <span class="rnum">race_id: 202644081505</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">1</span></td>
-          <td>ドウジギリ<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:96%"></div></div><span class="pct">32.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:53%"></div></div><span class="pct">52.7%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">5</span></td>
-          <td>パルミジャニーノ<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:92%"></div></div><span class="pct">30.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div><span class="pct">56.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>トゥピ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:47%"></div></div><span class="pct">15.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">36.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>グレアネオンライト</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div><span class="pct">14.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:32%"></div></div><span class="pct">32.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>アトランティス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">7.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">35.1%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">6R</span>
-        <span class="rnum">race_id: 202644081506</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">12</span></td>
-          <td>エドノスターウッド<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:69%"></div></div><span class="pct">23.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">37.3%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">13</span></td>
-          <td>ガーベラフレイバー<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:39%"></div></div><span class="pct">13.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><span class="pct">33.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>ヒュプシュ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><span class="pct">11.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="pct">29.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>スリーバンカーズ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="pct">9.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">29.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>ミュウチャン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">30.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>ボビー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">5.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="pct">14.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ステイフリー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">17.2%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>ピルゴスアイトス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">13.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>ヘイアンティアー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">4.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">19.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>ニジイロピカール</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">4.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">15.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>サヴォア</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">8.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>クリノエーデル</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">12.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>カンタベリータイム</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">3.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">13.3%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">7R</span>
-        <span class="rnum">race_id: 202644081507</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">15</span></td>
-          <td>コブラツイスト<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="pct">19.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:51%"></div></div><span class="pct">50.7%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">9</span></td>
-          <td>マインゴールド<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">12.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:33%"></div></div><span class="pct">33.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>レヴェルトディオ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:32%"></div></div><span class="pct">10.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><span class="pct">40.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>マジックエレガンス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="pct">9.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">34.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ドリームパンサー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">21.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>タイセイディエティ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">7.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="pct">28.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>アンパンタイム</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">11.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>オレンジマン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">4.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">20.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>シュヴァルニブロン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">9.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>リアンリーヴァ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">16.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">13</span></td>
-          <td>オロールシェール</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">15.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>シンプウエース</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><span class="pct">13.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>タケゾウ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">23.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">14</span></td>
-          <td>サマニデンカ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="pct">15.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">16</span></td>
-          <td>ブイスリー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="pct">18.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">12</span></td>
-          <td>ヴァルディ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:6%"></div></div><span class="pct">2.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">9.7%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">8R</span>
-        <span class="rnum">race_id: 202644081508</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">10</span></td>
-          <td>シンギングブルース<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="pct">35.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="pct">64.8%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">5</span></td>
-          <td>フェレザ<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div><span class="pct">14.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="pct">28.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>ジーベンファルベン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">8.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">19.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>ゼイトク</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">8.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">27.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>ニシノシークレット</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">23.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>オソルノ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">7.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="pct">18.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>ウインアイリーン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">6.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:19%"></div></div><span class="pct">18.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>ゴールドカグヤヒメ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">4.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">11.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">2</span></td>
-          <td>ライブリームーラン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>シャークシャイニー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">8.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>キャップ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div><span class="pct">1.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div><span class="pct">4.3%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">9R</span>
-        <span class="rnum">race_id: 202644081509</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">2</span></td>
-          <td>グラスグリード<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:69%"></div></div><span class="pct">23.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:51%"></div></div><span class="pct">51.4%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">11</span></td>
-          <td>シビックフォイル<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:41%"></div></div><span class="pct">13.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">26.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>オーサムデアラー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:34%"></div></div><span class="pct">11.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">12.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>アルティメットサガ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div><span class="pct">9.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">27.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>カセノタイガー</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div><span class="pct">9.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">30.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>ヘルメース</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">8.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">26.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>ナギサノルナ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">5.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">16.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">12</span></td>
-          <td>パレスゴールド</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">4.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">21.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">14</span></td>
-          <td>ラペルシェール</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>レディメローラ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.3%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">5.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>バンボリーナ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">3.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">8.2%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>チャダルクン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">13.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">13</span></td>
-          <td>モンゲーキララ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">1.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:5%"></div></div><span class="pct">5.3%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">8</span></td>
-          <td>イチニチショチョウ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div><span class="pct">0.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:7%"></div></div><span class="pct">7.4%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <div class="race-card">
-      <div class="race-head">
-        <span class="race-title">10R</span>
-        <span class="rnum">race_id: 202644081510</span>
-      </div>
-      <table class="pred-table">
-        <thead><tr><th>馬番</th><th>馬名</th><th>単勝</th><th>複勝</th></tr></thead>
-        <tbody>
-        <tr class="honmei">
-          <td><span class="umaban">8</span></td>
-          <td>デルマアリエル<span class="pick-badge">本命</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:47%"></div></div><span class="pct">15.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div><span class="pct">45.5%</span></div></td>
-        </tr>
-        <tr class="taikou">
-          <td><span class="umaban">2</span></td>
-          <td>フタバサクセス<span class="pick-badge taikou">対抗</span></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:46%"></div></div><span class="pct">15.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><span class="pct">44.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">14</span></td>
-          <td>エーデルワイス</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><span class="pct">12.5%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:39%"></div></div><span class="pct">38.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">9</span></td>
-          <td>デスタン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">11.7%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div><span class="pct">44.7%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">12</span></td>
-          <td>ビーンスモークモカ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">10.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">29.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">10</span></td>
-          <td>ディサイデッド</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="pct">6.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">22.8%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">1</span></td>
-          <td>ショーシャンク</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">5.6%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pct">19.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">13</span></td>
-          <td>ケンオーシャン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.4%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">23.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">4</span></td>
-          <td>リュウノウィザード</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">10.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">7</span></td>
-          <td>グリスタン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">4.0%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">16.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">11</span></td>
-          <td>ミツカネマーズ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">3.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">16.4%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">6</span></td>
-          <td>サラニキケン</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">3.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">10.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">5</span></td>
-          <td>ピンナダ</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pct">2.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:16%"></div></div><span class="pct">16.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td><span class="umaban">3</span></td>
-          <td>ブレスト</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div><span class="pct">1.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div><span class="pct">3.7%</span></div></td>
-        </tr></tbody>
-      </table>
-    </div>
+        <section class="track-block">
+          <div class="track-block-head"><h2>大井</h2>
+            <a href="courses.html#大井" style="font-size:11px;color:var(--red);">コース特徴 →</a></div>
+          <p class="track-note-mini">1周1600m(外回り)・直線386m。南関東4場で唯一の右回り(左回りコースも別途あり、世界唯一の両回り競馬場としても知られる)。直線が地方競馬場全体でも最長クラスで、他場に比べて差し・追込みも決まりやすいとされる。</p>
+          <div class="race-grid">
+            <a class="race-tile" href="races/大井_1.html">
+              <span class="rn">1R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ペイルムーン</span>
+            </a>
+            <a class="race-tile" href="races/大井_2.html">
+              <span class="rn">2R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ペイルムーン</span>
+            </a>
+            <a class="race-tile" href="races/大井_8.html">
+              <span class="rn">8R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ペイルムーン</span>
+            </a>
+            <a class="race-tile" href="races/大井_9.html">
+              <span class="rn">9R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ペイルムーン</span>
+            </a>
+            <a class="race-tile" href="races/大井_10.html">
+              <span class="rn">10R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ペイルムーン</span>
+            </a></div>
         </section>
 </div>
 
