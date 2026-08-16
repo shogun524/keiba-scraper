@@ -32,7 +32,7 @@ import re
 HORSE_ANCHOR = re.compile(r'^(\d{1,2})\t(\d{1,2})\t?$')
 PAST_RACE_ANCHOR = re.compile(r'^(\d{4})\.(\d{2})\.(\d{2})\s+(\S+)$')
 RACE_NUM_LINE = re.compile(r'^(\d+|取)$')
-RESULT_LINE = re.compile(r'^(\d+)頭\s+(\d+)番\s+(\d+)人\s+(\S+)\s+([\d.]+)$')
+RESULT_LINE = re.compile(r'^(\d+)頭\s+(\d+)番\s+(\d+)人\s+(\S+)\s+[▲△☆◇□]?([\d.]+)$')
 COURSE_LINE = re.compile(r'^(ダ|芝)(\d+)(?:\s+(\d+:[\d.]+|[\d.]+))?\s*(良|稍重|稍|重|不良|不)?$')
 CORNER_LINE = re.compile(r'^([\d\-]+)?\s*\(([\d.]+)\)\s*(\d+)?\(([+-]?\d+)\)?$')
 MARGIN_LINE = re.compile(r'^(\S+?)\(([+-]?[\d.]+)\)$')
@@ -109,18 +109,18 @@ def parse_horse_static(block: list[str]) -> dict:
             result['odds'] = float(odds_m.group(1))
             result['ninki'] = int(odds_m.group(2))
             continue
-        sac_m = re.match(r'^(牡|牝|セン)(\d+)(\S+)$', line)
+        sac_m = re.match(r'^(牡|牝|セ)(\d+)(\S+)$', line)
         if sac_m:
             result['sei'] = sac_m.group(1)
             result['rei'] = int(sac_m.group(2))
             result['kegaro'] = sac_m.group(3)
             continue
-        kinryo_m = re.match(r'^([\d.]+)$', line)
+        kinryo_m = re.match(r'^[▲△☆◇□]?([\d.]+)$', line)
         if kinryo_m and 'kinryo' not in result and 'sei' in result:
             result['kinryo'] = float(kinryo_m.group(1))
             continue
         if 'sei' in result and 'kinryo' not in result and 'jockey' not in result \
-                and not re.match(r'^[\d.]+$', line) and line:
+                and not re.match(r'^[▲△☆◇□]?[\d.]+$', line) and line:
             result['jockey'] = line
 
     return result
