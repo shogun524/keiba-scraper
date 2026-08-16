@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大井 4R 予想 - 2026-08-16</title>
+<title>大井 4R 予想 - 2026-08-17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 
   :root{
@@ -23,15 +23,15 @@
   .hero{padding:46px 20px 26px;text-align:center;border-bottom:3px solid var(--ink);position:relative;}
   .hero .eyebrow{font-family:'DM Mono', monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
     text-transform:uppercase;margin-bottom:12px;font-weight:500;}
-  .hero h1{font-family:'Shippori Mincho', serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
+  .hero h1{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
   .hero .updated{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
   .track-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
-  .track-nav a{font-family:'Shippori Mincho',serif;font-weight:800;font-size:13px;color:var(--ink);
+  .track-nav a{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:13px;color:var(--ink);
     border:1.5px solid var(--ink);padding:6px 16px;text-decoration:none;background:var(--paper-card);}
   .track-nav a:hover{background:var(--ink);color:var(--paper-card);}
 
   section.track-section{padding:34px 0 8px;border-bottom:1px solid var(--line);}
-  .track-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 6px;
+  .track-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 6px;
     display:flex;align-items:baseline;gap:12px;}
   .track-title .badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--red);
     border:1px solid var(--red); border-radius:20px; padding:2px 10px;}
@@ -42,7 +42,7 @@
   .race-card{background:var(--paper-card);border:1px solid var(--line);border-left:4px solid var(--ink);
     border-radius:2px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(28,26,23,0.04);}
   .race-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
-  .race-head .race-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:17px;}
+  .race-head .race-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:17px;}
   .race-head .race-name{font-size:13px;color:var(--ink-dim);margin-left:8px;}
   .race-head .rnum{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
   .race-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);
@@ -61,7 +61,7 @@
     font-size:11px;font-weight:500;}
   tr.honmei .umaban{background:var(--red);}
 
-  .pick-badge{font-family:'Shippori Mincho',serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
+  .pick-badge{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
     background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
@@ -70,6 +70,10 @@
   .bar-fill{height:100%;background:var(--red);}
   tr:not(.honmei) .bar-fill{background:var(--ink-faint);}
   .pct{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);}
+  .top3-rank{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;
+    padding:0 4px;border-radius:9px;background:var(--gold);color:var(--paper-card);
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:500;flex-shrink:0;}
+  tr.honmei .top3-rank{background:var(--red);}
   .odds-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-dim);}
 
   .himo-block{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
@@ -91,7 +95,7 @@
   .bet-line .arrow{color:var(--ink-faint);margin:0 4px;}
 
   .triple-block{background:var(--ink);color:var(--paper-card);border-radius:6px;padding:18px 20px;margin-bottom:20px;}
-  .triple-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
+  .triple-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
   .triple-desc{font-size:11.5px;color:#c9c2b0;margin-bottom:14px;}
   .triple-legs{display:flex;gap:14px;flex-wrap:wrap;}
   .triple-leg{background:rgba(255,255,255,0.06);border-radius:4px;padding:10px 14px;min-width:110px;}
@@ -100,7 +104,7 @@
   .triple-leg-bet .arrow{color:var(--gold);margin:0 4px;}
   .triple-leg-alt{font-family:'DM Mono',monospace;font-size:10px;color:#a89f8c;margin-top:4px;}
 
-  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Shippori Mincho',serif;font-size:15px;}
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Zen Kaku Gothic New', sans-serif;font-size:15px;}
   .disclaimer{font-size:11px;color:var(--ink-faint);text-align:center;padding:20px 20px 0;max-width:640px;margin:0 auto;}
   footer{padding:20px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
   .table-scroll-hint{display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:4px;}
@@ -151,101 +155,104 @@
 </div>
 
 <div class="wrap" style="padding-top:20px;">
-  <h1 style="font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 4px;">大井</h1>
-  <p style="font-size:12px;color:var(--ink-dim);margin:0 0 20px;">2026-08-16 分</p>
+  <h1 style="font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 4px;">大井</h1>
+  <p style="font-size:12px;color:var(--ink-dim);margin:0 0 20px;">2026-08-17 分</p>
 
     <div class="race-card">
       <div class="race-head">
-        <span><span class="race-title">4R</span><span class="race-name">2歳三四</span></span>
-        <span class="rnum">race_id: 202644081604</span>
+        <span><span class="race-title">4R</span><span class="race-name">フレッシュスター特別競走(2歳)</span></span>
+        <span class="rnum">race_id: 202644081704</span>
       </div>
       <div class="race-sub">
         <span>発走 17:17</span>
         <span>未格付</span>
-        <span>ダ1200m</span>
+        <span>ダ1400m</span>
         <span>天候:―</span>
         <span>馬場:−</span>
       </div>
       <table class="pred-table">
         <caption class="table-scroll-hint">← 横にスクロールできます →</caption>
-        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>単勝オッズ</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
+        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
         <tbody>
         <tr class="honmei">
-          <td>6</td>
-          <td><span class="umaban">6</span></td>
-          <td>クルジェムゲーム<span class="pick-badge">本命</span></td>
-          <td>牝2.0 / 54.0kg</td>
-          <td>笹川翼</td>
-          <td class="odds-cell">4.8倍 (3人気)</td>
-          <td class="odds-cell">直近4.0人気 / 上3F平均39.2秒 / 休養3週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div><span class="pct">31.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div><span class="pct">30.3%</span></div></td>
+          <td>2</td>
+          <td><span class="umaban">2</span></td>
+          <td>パープルフォッグ<span class="pick-badge">本命</span></td>
+          <td>牝2 / 54.0kg</td>
+          <td>西啓太</td>
+          <td class="odds-cell">直近1.0人気 / 上3F平均36.6秒 / 休養3週 (1走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="pct">33.3%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">1位</span><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div><span class="pct">67.7%</span></div></td>
         </tr>
         <tr class="taikou">
           <td>7</td>
           <td><span class="umaban">7</span></td>
-          <td>サーブルエース<span class="pick-badge taikou">対抗</span></td>
-          <td>牡2.0 / 54.0kg</td>
-          <td>和田譲</td>
-          <td class="odds-cell">2.5倍 (1人気)</td>
-          <td class="odds-cell">直近2.0人気 / 上3F平均39.6秒 / 休養3週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:56%"></div></div><span class="pct">18.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">35.2%</span></div></td>
+          <td>ユウユウヴィオラ<span class="pick-badge taikou">対抗</span></td>
+          <td>牡2 / 54.0kg</td>
+          <td>本田正</td>
+          <td class="odds-cell">直近3.0人気 / 上3F平均37.2秒 / 休養6週 (1走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="pct">19.1%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">2位</span><div class="bar-track"><div class="bar-fill" style="width:59%"></div></div><span class="pct">59.0%</span></div></td>
         </tr>
         <tr class="">
-          <td>5</td>
-          <td><span class="umaban">5</span></td>
-          <td>ダンサーズウニ</td>
-          <td>牝2.0 / 54.0kg</td>
-          <td>野畑凌</td>
-          <td class="odds-cell">6.6倍 (4人気)</td>
-          <td class="odds-cell">直近5.0人気 / 上3F平均39.2秒 / 休養3週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div><span class="pct">16.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">22.1%</span></div></td>
-        </tr>
-        <tr class="">
-          <td>2</td>
-          <td><span class="umaban">2</span></td>
-          <td>サラカノ</td>
-          <td>牝2.0 / 51.0kg</td>
-          <td>木澤奨</td>
-          <td class="odds-cell">6.9倍 (5人気)</td>
-          <td class="odds-cell">直近7.0人気 / 上3F平均39.4秒 / 休養8週 (3走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div><span class="pct">14.9%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">26.9%</span></div></td>
-        </tr>
-        <tr class="">
-          <td>1</td>
-          <td><span class="umaban">1</span></td>
-          <td>ランサスゴールド</td>
-          <td> / ―kg</td>
-          <td>―</td>
-          <td class="odds-cell">11.9倍 (6人気)</td>
-          <td class="odds-cell">直近4.0人気 / 上3F平均39.7秒 / 休養3週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">8.1%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div><span class="pct">18.0%</span></div></td>
-        </tr>
-        <tr class="">
-          <td>3</td>
-          <td><span class="umaban">3</span></td>
-          <td>ラッキーカラー</td>
-          <td>牡2.0 / 54.0kg</td>
-          <td>藤本現</td>
-          <td class="odds-cell">4.3倍 (2人気)</td>
-          <td class="odds-cell">直近6.0人気 / 上3F平均40.4秒 / 休養6週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.8%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">27.3%</span></div></td>
+          <td>8</td>
+          <td><span class="umaban">8</span></td>
+          <td>フォースマジュール</td>
+          <td>牡2 / 54.0kg</td>
+          <td>笹川翼</td>
+          <td class="odds-cell">直近1.0人気 / 上3F平均39.8秒 / 休養12週 (1走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:51%"></div></div><span class="pct">16.9%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">3位</span><div class="bar-track"><div class="bar-fill" style="width:59%"></div></div><span class="pct">58.7%</span></div></td>
         </tr>
         <tr class="">
           <td>4</td>
           <td><span class="umaban">4</span></td>
-          <td>フェスティヴバディ</td>
-          <td>牡2.0 / 54.0kg</td>
-          <td>達城龍</td>
-          <td class="odds-cell">27.8倍 (7人気)</td>
-          <td class="odds-cell">直近7.0人気 / 上3F平均44.7秒 / 休養3週 (1走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:10%"></div></div><span class="pct">3.2%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:15%"></div></div><span class="pct">14.7%</span></div></td>
+          <td>イントゥザライト</td>
+          <td>牡2 / 54.0kg</td>
+          <td>吉井章</td>
+          <td class="odds-cell">直近1.5人気 / 上3F平均38.3秒 / 休養2週 (2走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:26%"></div></div><span class="pct">8.8%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">4位</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><span class="pct">49.7%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>3</td>
+          <td><span class="umaban">3</span></td>
+          <td>アウン</td>
+          <td>牡2 / 54.0kg</td>
+          <td>張田昂</td>
+          <td class="odds-cell">直近5.0人気 / 上3F平均39.9秒 / 休養2週 (4走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">7.5%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">6位</span><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div><span class="pct">31.0%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>1</td>
+          <td><span class="umaban">1</span></td>
+          <td>ゴールドシュミット</td>
+          <td>牡2 / 54.0kg</td>
+          <td>矢野貴</td>
+          <td class="odds-cell">直近2.0人気 / 上3F平均38.5秒 / 休養2週 (2走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div><span class="pct">7.1%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">5位</span><div class="bar-track"><div class="bar-fill" style="width:49%"></div></div><span class="pct">49.5%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>6</td>
+          <td><span class="umaban">6</span></td>
+          <td>フレンドトネール</td>
+          <td>牡2 / 54.0kg</td>
+          <td>鷹見陸</td>
+          <td class="odds-cell">直近5.7人気 / 上3F平均40.1秒 / 休養2週 (3走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.8%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">7位</span><div class="bar-track"><div class="bar-fill" style="width:24%"></div></div><span class="pct">24.3%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>5</td>
+          <td><span class="umaban">5</span></td>
+          <td>ポッドマデラ</td>
+          <td>牡2 / 54.0kg</td>
+          <td>藤田凌</td>
+          <td class="odds-cell">直近4.0人気 / 上3F平均40.9秒 / 休養3週 (1走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div><span class="pct">3.7%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">8位</span><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">22.1%</span></div></td>
         </tr></tbody>
       </table>
       
@@ -257,26 +264,26 @@
           <span class="style-tag">平均的 (+0.0)</span>
         </span>
         <span class="himo-chip ">
-          <span class="umaban">3</span>
-          <span class="style-tag">平均的 (+0.0)</span>
-        </span>
-        <span class="himo-chip ">
-          <span class="umaban">2</span>
-          <span class="style-tag">平均的 (+0.0)</span>
-        </span>
-        <span class="himo-chip ">
-          <span class="umaban">5</span>
+          <span class="umaban">8</span>
           <span class="style-tag">平均的 (+1.0)</span>
+        </span>
+        <span class="himo-chip ">
+          <span class="umaban">4</span>
+          <span class="style-tag">平均的 (-0.5)</span>
         </span>
         <span class="himo-chip ">
           <span class="umaban">1</span>
           <span class="style-tag">平均的 (+0.0)</span>
+        </span>
+        <span class="himo-chip ">
+          <span class="umaban">3</span>
+          <span class="style-tag">平均的 (-1.2)</span>
         </span></div>
       </div>
       
       <div class="bet-block">
         <div class="bet-label">買い目案(馬単1着流し・3点)</div>
-        <div class="bet-line">6<span class="arrow">→</span>7, 3, 2</div>
+        <div class="bet-line">2<span class="arrow">→</span>7, 8, 4</div>
       </div>
     </div>
 </div>

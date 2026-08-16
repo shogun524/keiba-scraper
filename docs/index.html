@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>南関東競馬AI予想 - 2026-08-16</title>
+<title>南関東競馬AI予想 - 2026-08-17</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 
   :root{
@@ -23,15 +23,15 @@
   .hero{padding:46px 20px 26px;text-align:center;border-bottom:3px solid var(--ink);position:relative;}
   .hero .eyebrow{font-family:'DM Mono', monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
     text-transform:uppercase;margin-bottom:12px;font-weight:500;}
-  .hero h1{font-family:'Shippori Mincho', serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
+  .hero h1{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
   .hero .updated{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
   .track-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
-  .track-nav a{font-family:'Shippori Mincho',serif;font-weight:800;font-size:13px;color:var(--ink);
+  .track-nav a{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:13px;color:var(--ink);
     border:1.5px solid var(--ink);padding:6px 16px;text-decoration:none;background:var(--paper-card);}
   .track-nav a:hover{background:var(--ink);color:var(--paper-card);}
 
   section.track-section{padding:34px 0 8px;border-bottom:1px solid var(--line);}
-  .track-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 6px;
+  .track-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 6px;
     display:flex;align-items:baseline;gap:12px;}
   .track-title .badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--red);
     border:1px solid var(--red); border-radius:20px; padding:2px 10px;}
@@ -42,7 +42,7 @@
   .race-card{background:var(--paper-card);border:1px solid var(--line);border-left:4px solid var(--ink);
     border-radius:2px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(28,26,23,0.04);}
   .race-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
-  .race-head .race-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:17px;}
+  .race-head .race-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:17px;}
   .race-head .race-name{font-size:13px;color:var(--ink-dim);margin-left:8px;}
   .race-head .rnum{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
   .race-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);
@@ -61,7 +61,7 @@
     font-size:11px;font-weight:500;}
   tr.honmei .umaban{background:var(--red);}
 
-  .pick-badge{font-family:'Shippori Mincho',serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
+  .pick-badge{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
     background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
@@ -70,6 +70,10 @@
   .bar-fill{height:100%;background:var(--red);}
   tr:not(.honmei) .bar-fill{background:var(--ink-faint);}
   .pct{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);}
+  .top3-rank{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;
+    padding:0 4px;border-radius:9px;background:var(--gold);color:var(--paper-card);
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:500;flex-shrink:0;}
+  tr.honmei .top3-rank{background:var(--red);}
   .odds-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-dim);}
 
   .himo-block{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
@@ -91,7 +95,7 @@
   .bet-line .arrow{color:var(--ink-faint);margin:0 4px;}
 
   .triple-block{background:var(--ink);color:var(--paper-card);border-radius:6px;padding:18px 20px;margin-bottom:20px;}
-  .triple-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
+  .triple-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
   .triple-desc{font-size:11.5px;color:#c9c2b0;margin-bottom:14px;}
   .triple-legs{display:flex;gap:14px;flex-wrap:wrap;}
   .triple-leg{background:rgba(255,255,255,0.06);border-radius:4px;padding:10px 14px;min-width:110px;}
@@ -100,7 +104,7 @@
   .triple-leg-bet .arrow{color:var(--gold);margin:0 4px;}
   .triple-leg-alt{font-family:'DM Mono',monospace;font-size:10px;color:#a89f8c;margin-top:4px;}
 
-  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Shippori Mincho',serif;font-size:15px;}
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Zen Kaku Gothic New', sans-serif;font-size:15px;}
   .disclaimer{font-size:11px;color:var(--ink-faint);text-align:center;padding:20px 20px 0;max-width:640px;margin:0 auto;}
   footer{padding:20px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
   .table-scroll-hint{display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:4px;}
@@ -135,7 +139,7 @@
 
   .track-block{padding:28px 0;border-bottom:1px solid var(--line);}
   .track-block-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;}
-  .track-block-head h2{font-family:'Shippori Mincho',serif;font-weight:800;font-size:20px;margin:0;}
+  .track-block-head h2{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:20px;margin:0;}
   .track-note-mini{font-size:11.5px;color:var(--ink-dim);margin-bottom:14px;}
   .race-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));gap:10px;}
   .race-tile{display:block;background:var(--paper-card);border:1px solid var(--line);border-radius:6px;
@@ -143,7 +147,7 @@
     transition:transform 0.08s ease;}
   .race-tile:active{transform:scale(0.96);}
   .race-tile:hover{border-color:var(--red);}
-  .race-tile .rn{font-family:'Shippori Mincho',serif;font-weight:800;font-size:18px;display:block;}
+  .race-tile .rn{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:18px;display:block;}
   .race-tile .rtime{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);display:block;margin-top:3px;}
   .race-tile .rhonmei{font-size:10.5px;color:var(--red);display:block;margin-top:4px;font-weight:500;}
   .top-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
@@ -158,7 +162,7 @@
   <div class="wrap">
     <div class="eyebrow">South Kanto NAR AI · Daily Report</div>
     <h1>南関東競馬AI予想</h1>
-    <div class="updated">2026-08-16 分 · 最終更新: 2026-08-15 22:18</div>
+    <div class="updated">2026-08-17 分 · 最終更新: 2026-08-16 13:47</div>
     <div class="top-links">
       <a href="triple.html">トリプル馬単 →</a>
       <a href="courses.html">コース特徴 →</a>
@@ -176,52 +180,52 @@
             <a class="race-tile" href="races/大井_1.html">
               <span class="rn">1R</span>
               <span class="rtime">15:40</span>
-              <span class="rhonmei">◎ベイデンフラッシュ</span>
+              <span class="rhonmei">◎ジャスティンロング</span>
             </a>
             <a class="race-tile" href="races/大井_2.html">
               <span class="rn">2R</span>
               <span class="rtime">16:12</span>
-              <span class="rhonmei">◎コトブキエース</span>
+              <span class="rhonmei">◎ショウサンレックス</span>
             </a>
             <a class="race-tile" href="races/大井_3.html">
               <span class="rn">3R</span>
               <span class="rtime">16:45</span>
-              <span class="rhonmei">◎トライオン</span>
+              <span class="rhonmei">◎ケテンパッション</span>
             </a>
             <a class="race-tile" href="races/大井_4.html">
               <span class="rn">4R</span>
               <span class="rtime">17:17</span>
-              <span class="rhonmei">◎クルジェムゲーム</span>
+              <span class="rhonmei">◎パープルフォッグ</span>
             </a>
             <a class="race-tile" href="races/大井_5.html">
               <span class="rn">5R</span>
               <span class="rtime">17:50</span>
-              <span class="rhonmei">◎ナンパセン</span>
+              <span class="rhonmei">◎ベイビークエスト</span>
             </a>
             <a class="race-tile" href="races/大井_6.html">
               <span class="rn">6R</span>
               <span class="rtime">18:22</span>
-              <span class="rhonmei">◎グロワールスカイ</span>
+              <span class="rhonmei">◎ヴォーグアルタイル</span>
             </a>
             <a class="race-tile" href="races/大井_7.html">
               <span class="rn">7R</span>
               <span class="rtime">18:55</span>
-              <span class="rhonmei">◎カナホゲラ</span>
+              <span class="rhonmei">◎ペニーファウンテン</span>
             </a>
             <a class="race-tile" href="races/大井_8.html">
               <span class="rn">8R</span>
               <span class="rtime">19:30</span>
-              <span class="rhonmei">◎グルナルーフス</span>
+              <span class="rhonmei">◎ヘビーキュー</span>
             </a>
             <a class="race-tile" href="races/大井_9.html">
               <span class="rn">9R</span>
               <span class="rtime">20:10</span>
-              <span class="rhonmei">◎スマートサニー</span>
+              <span class="rhonmei">◎アドマイヤエイジア</span>
             </a>
             <a class="race-tile" href="races/大井_10.html">
               <span class="rn">10R</span>
               <span class="rtime">20:50</span>
-              <span class="rhonmei">◎アリステア</span>
+              <span class="rhonmei">◎トップレジェンド</span>
             </a></div>
         </section>
 </div>
