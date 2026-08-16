@@ -89,15 +89,15 @@ BASE_CSS = """
   .hero{padding:46px 20px 26px;text-align:center;border-bottom:3px solid var(--ink);position:relative;}
   .hero .eyebrow{font-family:'DM Mono', monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
     text-transform:uppercase;margin-bottom:12px;font-weight:500;}
-  .hero h1{font-family:'Shippori Mincho', serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
+  .hero h1{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
   .hero .updated{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
   .track-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
-  .track-nav a{font-family:'Shippori Mincho',serif;font-weight:800;font-size:13px;color:var(--ink);
+  .track-nav a{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:13px;color:var(--ink);
     border:1.5px solid var(--ink);padding:6px 16px;text-decoration:none;background:var(--paper-card);}
   .track-nav a:hover{background:var(--ink);color:var(--paper-card);}
 
   section.track-section{padding:34px 0 8px;border-bottom:1px solid var(--line);}
-  .track-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 6px;
+  .track-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 6px;
     display:flex;align-items:baseline;gap:12px;}
   .track-title .badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--red);
     border:1px solid var(--red); border-radius:20px; padding:2px 10px;}
@@ -108,7 +108,7 @@ BASE_CSS = """
   .race-card{background:var(--paper-card);border:1px solid var(--line);border-left:4px solid var(--ink);
     border-radius:2px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(28,26,23,0.04);}
   .race-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
-  .race-head .race-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:17px;}
+  .race-head .race-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:17px;}
   .race-head .race-name{font-size:13px;color:var(--ink-dim);margin-left:8px;}
   .race-head .rnum{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
   .race-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);
@@ -127,7 +127,7 @@ BASE_CSS = """
     font-size:11px;font-weight:500;}
   tr.honmei .umaban{background:var(--red);}
 
-  .pick-badge{font-family:'Shippori Mincho',serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
+  .pick-badge{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
     background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
@@ -136,6 +136,10 @@ BASE_CSS = """
   .bar-fill{height:100%;background:var(--red);}
   tr:not(.honmei) .bar-fill{background:var(--ink-faint);}
   .pct{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);}
+  .top3-rank{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;
+    padding:0 4px;border-radius:9px;background:var(--gold);color:var(--paper-card);
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:500;flex-shrink:0;}
+  tr.honmei .top3-rank{background:var(--red);}
   .odds-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-dim);}
 
   .himo-block{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
@@ -157,7 +161,7 @@ BASE_CSS = """
   .bet-line .arrow{color:var(--ink-faint);margin:0 4px;}
 
   .triple-block{background:var(--ink);color:var(--paper-card);border-radius:6px;padding:18px 20px;margin-bottom:20px;}
-  .triple-title{font-family:'Shippori Mincho',serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
+  .triple-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
   .triple-desc{font-size:11.5px;color:#c9c2b0;margin-bottom:14px;}
   .triple-legs{display:flex;gap:14px;flex-wrap:wrap;}
   .triple-leg{background:rgba(255,255,255,0.06);border-radius:4px;padding:10px 14px;min-width:110px;}
@@ -166,7 +170,7 @@ BASE_CSS = """
   .triple-leg-bet .arrow{color:var(--gold);margin:0 4px;}
   .triple-leg-alt{font-family:'DM Mono',monospace;font-size:10px;color:#a89f8c;margin-top:4px;}
 
-  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Shippori Mincho',serif;font-size:15px;}
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Zen Kaku Gothic New', sans-serif;font-size:15px;}
   .disclaimer{font-size:11px;color:var(--ink-faint);text-align:center;padding:20px 20px 0;max-width:640px;margin:0 auto;}
   footer{padding:20px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
   .table-scroll-hint{display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:4px;}
@@ -272,10 +276,9 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
           <td>{row['horse_name']}{badge}</td>
           <td>{sei_rei} / {fmt(row.get('kinryo'))}kg</td>
           <td>{fmt(row.get('jockey'))}</td>
-          <td class="odds-cell">{fmt_odds(row.get('odds'))}{' (' + str(int(row['ninki'])) + '人気)' if pd.notna(row.get('ninki')) else ''}</td>
           <td class="odds-cell">直近{avg_ninki_str} / 上3F平均{avg_last3f_str} / 休養{weeks_str} ({n_past_str})</td>
           <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:{min(win_pct*3,100):.0f}%"></div></div><span class="pct">{win_pct:.1f}%</span></div></td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:{top3_pct:.0f}%"></div></div><span class="pct">{top3_pct:.1f}%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">{int(row.get('top3_rank', 0))}位</span><div class="bar-track"><div class="bar-fill" style="width:{top3_pct:.0f}%"></div></div><span class="pct">{top3_pct:.1f}%</span></div></td>
         </tr>""")
 
     # 紐(2〜3着候補)ブロック
@@ -322,7 +325,7 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
       </div>
       <table class="pred-table">
         <caption class="table-scroll-hint">← 横にスクロールできます →</caption>
-        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>単勝オッズ</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
+        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
         <tbody>{''.join(rows_html)}</tbody>
       </table>
       {himo_block}
@@ -337,12 +340,12 @@ HOME_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南関東競馬AI予想 - {date}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 {base_css}
   .track-block{{padding:28px 0;border-bottom:1px solid var(--line);}}
   .track-block-head{{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;}}
-  .track-block-head h2{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:20px;margin:0;}}
+  .track-block-head h2{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:20px;margin:0;}}
   .track-note-mini{{font-size:11.5px;color:var(--ink-dim);margin-bottom:14px;}}
   .race-grid{{display:grid;grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));gap:10px;}}
   .race-tile{{display:block;background:var(--paper-card);border:1px solid var(--line);border-radius:6px;
@@ -350,7 +353,7 @@ HOME_TEMPLATE = """<!DOCTYPE html>
     transition:transform 0.08s ease;}}
   .race-tile:active{{transform:scale(0.96);}}
   .race-tile:hover{{border-color:var(--red);}}
-  .race-tile .rn{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:18px;display:block;}}
+  .race-tile .rn{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:18px;display:block;}}
   .race-tile .rtime{{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);display:block;margin-top:3px;}}
   .race-tile .rhonmei{{font-size:10.5px;color:var(--red);display:block;margin-top:4px;font-weight:500;}}
   .top-links{{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}}
@@ -390,7 +393,7 @@ RACE_PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{track} {race_num}R 予想 - {date}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 {base_css}
   .page-nav{{max-width:920px;margin:0 auto;padding:16px 20px 0;display:flex;justify-content:space-between;
@@ -411,7 +414,7 @@ RACE_PAGE_TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="wrap" style="padding-top:20px;">
-  <h1 style="font-family:'Shippori Mincho',serif;font-weight:800;font-size:22px;margin:0 0 4px;">{track}</h1>
+  <h1 style="font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 4px;">{track}</h1>
   <p style="font-size:12px;color:var(--ink-dim);margin:0 0 20px;">{date} 分</p>
 {content}
 </div>
@@ -575,7 +578,7 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南関東競馬 トリプル馬単 - {date}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{{
     --paper:#f7f3ea; --paper-card:#fffdf8; --ink:#1c1a17; --ink-dim:#6b6558; --ink-faint:#a89f8c;
@@ -589,13 +592,13 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
   .hero{{padding:44px 20px 24px;text-align:center;border-bottom:2px solid var(--gold);}}
   .hero .eyebrow{{font-family:'DM Mono',monospace;letter-spacing:0.28em;font-size:11px;color:var(--gold);
     text-transform:uppercase;margin-bottom:10px;}}
-  .hero h1{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:26px;margin:0 0 6px;color:var(--paper-card);}}
+  .hero h1{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:26px;margin:0 0 6px;color:var(--paper-card);}}
   .hero p{{font-size:12.5px;color:#c9c2b0;max-width:540px;margin:8px auto 0;}}
   .back-link{{display:inline-block;margin-top:16px;font-family:'DM Mono',monospace;font-size:12px;
     color:var(--paper-card);border:1.5px solid var(--paper-card);padding:5px 14px;text-decoration:none;}}
   .back-link:hover{{background:var(--paper-card);color:var(--ink);}}
   section.track-block{{padding:30px 0;border-bottom:1px solid rgba(255,255,255,0.12);}}
-  .track-h{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:20px;margin:0 0 6px;
+  .track-h{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:20px;margin:0 0 6px;
     display:flex;align-items:baseline;gap:10px;}}
   .range-badge{{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);border:1px solid var(--gold);
     border-radius:20px;padding:2px 10px;}}
@@ -649,7 +652,7 @@ COURSES_HTML_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>南関東競馬 コース特徴(距離別)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{{
     --paper:#f7f3ea; --paper-card:#fffdf8; --paper-deep:#efe7d3;
@@ -664,12 +667,12 @@ COURSES_HTML_TEMPLATE = """<!DOCTYPE html>
   .hero{{padding:44px 20px 24px;text-align:center;border-bottom:3px solid var(--ink);}}
   .hero .eyebrow{{font-family:'DM Mono',monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
     text-transform:uppercase;margin-bottom:10px;}}
-  .hero h1{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:26px;margin:0 0 6px;}}
+  .hero h1{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:26px;margin:0 0 6px;}}
   .back-link{{display:inline-block;margin-top:16px;font-family:'DM Mono',monospace;font-size:12px;
     color:var(--ink);border:1.5px solid var(--ink);padding:5px 14px;text-decoration:none;background:var(--paper-card);}}
   .back-link:hover{{background:var(--ink);color:var(--paper-card);}}
   section.track-block{{padding:30px 0;border-bottom:1px solid var(--line);}}
-  .track-h{{font-family:'Shippori Mincho',serif;font-weight:800;font-size:21px;margin:0 0 8px;}}
+  .track-h{{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:21px;margin:0 0 8px;}}
   .track-overview{{font-size:13.5px;color:var(--ink-dim);margin-bottom:18px;}}
   .dist-card{{background:var(--paper-card);border:1px solid var(--line);border-left:3px solid var(--red);
     border-radius:2px;padding:12px 16px;margin-bottom:10px;}}

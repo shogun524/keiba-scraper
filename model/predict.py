@@ -143,8 +143,10 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
     df['corner_gain'] = df['avg5_corner_gain']
     df = df.sort_values('p_win', ascending=False).reset_index(drop=True)
     df['rank'] = df.index + 1
+    # 複勝率だけで見た順位(単勝順位=rankとは別に、一目で紐候補の強さが分かるように)
+    df['top3_rank'] = df['p_top3'].rank(ascending=False, method='min').astype(int)
 
-    cols = ['rank', 'race_id', '馬番', 'waku', 'horse_name', 'sei', 'rei', 'kinryo', 'jockey',
+    cols = ['rank', 'top3_rank', 'race_id', '馬番', 'waku', 'horse_name', 'sei', 'rei', 'kinryo', 'jockey',
             'odds', 'ninki', 'p_win', 'p_top3', 'corner_gain',
             'avg5_ninki', 'avg5_margin', 'avg5_last3f', 'days_since_last',
             'n_past_races', 'same_track_as_last']
