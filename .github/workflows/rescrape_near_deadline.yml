@@ -1,0 +1,67 @@
+name: 南関東競馬 締切間近オッズ更新
+
+on:
+  schedule:
+    # 10分おき、レース開催時間帯のみ(12:00〜22:00 JST = 03:00〜13:00 UTC)
+    # GitHub Actionsのcronは指定時刻ちょうどに実行される保証はなく、
+    # 特に毎時00分は他リポジトリのジョブと重なり数分遅延することがある。
+    - cron: "*/10 3-12 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "対象日 (YYYY-MM-DD、空なら当日)"
+        required: false
+        default: ""
+      window_min:
+        description: "発走何分前までを対象にするか"
+        required: false
+        default: "10"
+
+jobs:
+  rescrape-near-deadline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存パッケージインストール
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: 締切間近レースの再取得
+        working-directory: scraper
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then
+            DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          fi
+          WINDOW="${{ github.event.inputs.window_min }}"
+          if [ -z "$WINDOW" ]; then
+            WINDOW=10
+          fi
+          python rescrape_near_deadline.py --date "$DATE" --window-min "$WINDOW"
+
+      - name: 予想・ダッシュボード再生成
+        working-directory: model
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then
+            DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          fi
+          JSONL="../scraper/scraped_data/${DATE}_racecards_raw.jsonl"
+          if [ -f "$JSONL" ]; then
+            python predict.py --input "$JSONL"
+            python generate_dashboard.py --date "$DATE"
+          fi
+
+      - name: 結果をコミット
+        run: |
+          git config user.name "keiba-ai-bot"
+          git config user.email "bot@example.com"
+          git add scraper/scraped_data/ docs/
+          git diff --cached --quiet || git commit -m "オッズ更新: $(TZ=Asia/Tokyo date +%Y-%m-%d\ %H:%M)"
+          git push
