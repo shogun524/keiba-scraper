@@ -32,8 +32,8 @@ ALL_FEATURES = FEATURE_COLS_NUMERIC + FEATURE_COLS_CATEGORICAL
 
 
 def load_models():
-    win_model = lgb.Booster(model_file=str(MODEL_DIR / "model_early_urawa_is_win.txt"))
-    top3_model = lgb.Booster(model_file=str(MODEL_DIR / "model_early_urawa_is_top3.txt"))
+    win_model = lgb.Booster(model_file=str(MODEL_DIR / "model_minamikanto_is_win.txt"))
+    top3_model = lgb.Booster(model_file=str(MODEL_DIR / "model_minamikanto_is_top3.txt"))
     return win_model, top3_model
 
 
