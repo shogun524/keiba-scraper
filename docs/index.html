@@ -3,69 +3,310 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>南関東競馬 トリプル馬単 - 2026-08-25</title>
+<title>南関東競馬AI予想 - 2026-09-07</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
   :root{
-    --paper:#f7f3ea; --paper-card:#fffdf8; --ink:#1c1a17; --ink-dim:#6b6558; --ink-faint:#a89f8c;
-    --gold:#a9832f; --line:#e0d6bd;
+    --paper:#f7f3ea; --paper-card:#fffdf8; --paper-deep:#efe7d3;
+    --ink:#1c1a17; --ink-dim:#6b6558; --ink-faint:#a89f8c;
+    --red:#b3272d; --red-dim:#7d1c20; --red-tint:#f7e6e4;
+    --line:#e0d6bd; --gold:#a9832f; --gold-tint:#f5edd9;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{background:var(--ink);color:var(--paper-card);font-family:'Zen Kaku Gothic New', sans-serif;
-    line-height:1.7;padding:0 0 80px;}
-  .wrap{max-width:880px;margin:0 auto;padding:0 20px;}
-  .hero{padding:44px 20px 24px;text-align:center;border-bottom:2px solid var(--gold);}
-  .hero .eyebrow{font-family:'DM Mono',monospace;letter-spacing:0.28em;font-size:11px;color:var(--gold);
-    text-transform:uppercase;margin-bottom:10px;}
-  .hero h1{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:26px;margin:0 0 6px;color:var(--paper-card);}
-  .hero p{font-size:12.5px;color:#c9c2b0;max-width:540px;margin:8px auto 0;}
-  .back-link{display:inline-block;margin-top:16px;font-family:'DM Mono',monospace;font-size:12px;
-    color:var(--paper-card);border:1.5px solid var(--paper-card);padding:5px 14px;text-decoration:none;}
-  .back-link:hover{background:var(--paper-card);color:var(--ink);}
-  section.track-block{padding:30px 0;border-bottom:1px solid rgba(255,255,255,0.12);}
-  .track-h{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:20px;margin:0 0 6px;
-    display:flex;align-items:baseline;gap:10px;}
-  .range-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);border:1px solid var(--gold);
-    border-radius:20px;padding:2px 10px;}
-  .total-combo{font-size:12px;color:#c9c2b0;margin-bottom:16px;}
-  .legs-row{display:flex;gap:14px;flex-wrap:wrap;}
-  .leg-card{background:rgba(255,255,255,0.05);border-radius:6px;padding:14px 16px;flex:1;min-width:220px;}
-  .leg-r{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;}
-  .leg-formation{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
-  .formation-label{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);}
-  .formation-nums{font-family:'DM Mono',monospace;font-size:15px;color:var(--paper-card);font-weight:500;}
-  .leg-formation .arrow{color:var(--gold);}
-  .leg-combos{font-family:'DM Mono',monospace;font-size:10.5px;color:#a89f8c;line-height:1.6;}
-  .empty{text-align:center;padding:60px 20px;color:#a89f8c;}
-  .disclaimer{font-size:11px;color:#a89f8c;text-align:center;padding:26px 20px 0;max-width:600px;margin:0 auto;}
+  body{background:var(--paper);
+    color:var(--ink); font-family:'Zen Kaku Gothic New', sans-serif; line-height:1.7; padding:0 0 90px;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px;}
+
+  .hero{padding:46px 20px 26px;text-align:center;border-bottom:3px solid var(--ink);position:relative;}
+  .hero .eyebrow{font-family:'DM Mono', monospace;letter-spacing:0.28em;font-size:11px;color:var(--red);
+    text-transform:uppercase;margin-bottom:12px;font-weight:500;}
+  .hero h1{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:30px;margin:0 0 8px;letter-spacing:0.02em;}
+  .hero .updated{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink-faint);}
+  .track-nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .track-nav a{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:13px;color:var(--ink);
+    border:1.5px solid var(--ink);padding:6px 16px;text-decoration:none;background:var(--paper-card);}
+  .track-nav a:hover{background:var(--ink);color:var(--paper-card);}
+
+  section.track-section{padding:34px 0 8px;border-bottom:1px solid var(--line);}
+  .track-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:22px;margin:0 0 6px;
+    display:flex;align-items:baseline;gap:12px;}
+  .track-title .badge{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--red);
+    border:1px solid var(--red); border-radius:20px; padding:2px 10px;}
+  .track-note{font-size:12px;color:var(--ink-dim);background:var(--paper-deep);border-radius:4px;
+    padding:9px 12px;margin-bottom:20px;}
+  .track-note b{color:var(--ink);}
+
+  .race-card{background:var(--paper-card);border:1px solid var(--line);border-left:4px solid var(--ink);
+    border-radius:2px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 0 rgba(28,26,23,0.04);}
+  .race-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;flex-wrap:wrap;gap:8px;}
+  .race-head .race-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:17px;}
+  .race-head .race-name{font-size:13px;color:var(--ink-dim);margin-left:8px;}
+  .race-head .rnum{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-faint);}
+  .race-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-faint);
+    border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:10px;}
+  .race-sub span{margin-right:14px;}
+
+  table.pred-table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.pred-table th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.03em;color:var(--ink-faint);
+    text-transform:uppercase;text-align:left;padding:6px 5px;border-bottom:1px solid var(--line);}
+  table.pred-table td{padding:7px 5px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  table.pred-table tr:last-child td{border-bottom:none;}
+  table.pred-table tr.honmei td{background:var(--red-tint);}
+
+  .umaban{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;
+    border-radius:50%;background:var(--ink);color:var(--paper-card);font-family:'DM Mono',monospace;
+    font-size:11px;font-weight:500;}
+  tr.honmei .umaban{background:var(--red);}
+
+  .pick-badge{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:10.5px;color:var(--paper-card);
+    background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
+  .pick-badge.taikou{background:var(--gold);}
+
+  .bar-cell{display:flex;align-items:center;gap:6px;}
+  .bar-track{width:50px;height:5px;background:var(--paper-deep);border-radius:3px;overflow:hidden;flex-shrink:0;}
+  .bar-fill{height:100%;background:var(--red);}
+  tr:not(.honmei) .bar-fill{background:var(--ink-faint);}
+  .pct{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ink);}
+  .top3-rank{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;
+    padding:0 4px;border-radius:9px;background:var(--gold);color:var(--paper-card);
+    font-family:'DM Mono',monospace;font-size:10px;font-weight:500;flex-shrink:0;}
+  tr.honmei .top3-rank{background:var(--red);}
+  .odds-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-dim);}
+
+  .himo-block{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);}
+  .himo-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.04em;color:var(--ink-faint);
+    text-transform:uppercase;margin-bottom:8px;}
+  .himo-chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .himo-chip{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:11px;
+    border:1px solid var(--line);border-radius:20px;padding:3px 10px 3px 4px;background:var(--paper);}
+  .himo-chip .umaban{width:18px;height:18px;font-size:9.5px;}
+  .himo-chip .style-tag{color:var(--ink-dim);font-family:'Zen Kaku Gothic New',sans-serif;font-size:10.5px;}
+  .himo-chip.sashi .style-tag{color:var(--red-dim);}
+  .himo-chip.senko .style-tag{color:var(--gold);}
+
+  .bet-block{margin-top:12px;padding:10px 14px;background:var(--gold-tint);border-radius:4px;
+    border-left:3px solid var(--gold);}
+  .bet-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.04em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:4px;font-weight:500;}
+  .bet-line{font-family:'DM Mono',monospace;font-size:13.5px;color:var(--ink);font-weight:500;}
+  .bet-line .arrow{color:var(--ink-faint);margin:0 4px;}
+
+  .triple-block{background:var(--ink);color:var(--paper-card);border-radius:6px;padding:18px 20px;margin-bottom:20px;}
+  .triple-title{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:15px;margin-bottom:6px;color:var(--gold);}
+  .triple-desc{font-size:11.5px;color:#c9c2b0;margin-bottom:14px;}
+  .triple-legs{display:flex;gap:14px;flex-wrap:wrap;}
+  .triple-leg{background:rgba(255,255,255,0.06);border-radius:4px;padding:10px 14px;min-width:110px;}
+  .triple-leg-r{font-family:'DM Mono',monospace;font-size:10px;color:#c9c2b0;margin-bottom:4px;}
+  .triple-leg-bet{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--paper-card);}
+  .triple-leg-bet .arrow{color:var(--gold);margin:0 4px;}
+  .triple-leg-alt{font-family:'DM Mono',monospace;font-size:10px;color:#a89f8c;margin-top:4px;}
+
+  .empty{text-align:center;padding:70px 20px;color:var(--ink-faint);font-family:'Zen Kaku Gothic New', sans-serif;font-size:15px;}
+  .disclaimer{font-size:11px;color:var(--ink-faint);text-align:center;padding:20px 20px 0;max-width:640px;margin:0 auto;}
+  footer{padding:20px 20px 0;text-align:center;color:var(--ink-faint);font-size:11px;font-family:'DM Mono',monospace;}
+  .table-scroll-hint{display:none;font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);margin-bottom:4px;}
+
+
   @media (max-width: 480px){
     .hero{padding:32px 16px 20px;}
     .hero h1{font-size:22px;}
-    .hero p{font-size:11.5px;}
-    .track-h{font-size:17px;}
-    .legs-row{flex-direction:column;}
-    .leg-card{min-width:auto;}
+    .hero .eyebrow{font-size:9.5px;letter-spacing:0.18em;}
+    .track-nav{gap:6px;}
+    .track-nav a{font-size:11.5px;padding:5px 11px;}
+    .track-section{padding:22px 0 4px;}
+    .track-title{font-size:18px;}
+    .race-card{padding:14px 12px;margin-bottom:12px;}
+    .race-head .race-title{font-size:15px;}
+    .race-head .race-name{display:block;margin-left:0;font-size:12px;}
+    .race-sub{font-size:10px;}
+    .race-sub span{margin-right:8px;display:inline-block;}
+    table.pred-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      font-size:11px;white-space:nowrap;}
+    table.pred-table th, table.pred-table td{padding:6px 5px;}
+    .table-scroll-hint{display:block;}
+    .bar-track{width:32px;}
+    .odds-cell{font-size:10px;}
+    .himo-chip-row{gap:5px;}
+    .himo-chip{font-size:10px;padding:2px 8px 2px 3px;}
+    .bet-block, .triple-block{padding:12px 14px;}
   }
+  @media (max-width: 340px){
+    .wrap{padding:0 12px;}
+  }
+
+  .track-block{padding:28px 0;border-bottom:1px solid var(--line);}
+  .track-block-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px;}
+  .track-block-head h2{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:20px;margin:0;}
+  .track-note-mini{font-size:11.5px;color:var(--ink-dim);margin-bottom:14px;}
+  .race-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(96px, 1fr));gap:10px;}
+  .race-tile{display:block;background:var(--paper-card);border:1px solid var(--line);border-radius:6px;
+    padding:12px 8px;text-align:center;text-decoration:none;color:var(--ink);
+    transition:transform 0.08s ease;}
+  .race-tile:active{transform:scale(0.96);}
+  .race-tile:hover{border-color:var(--red);}
+  .race-tile .rn{font-family:'Zen Kaku Gothic New', sans-serif;font-weight:800;font-size:18px;display:block;}
+  .race-tile .rtime{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink-faint);display:block;margin-top:3px;}
+  .race-tile .rhonmei{font-size:10.5px;color:var(--red);display:block;margin-top:4px;font-weight:500;}
+  .top-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+  .top-links a{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);border:1px solid var(--line);
+    padding:6px 16px;border-radius:20px;text-decoration:none;background:var(--paper-card);}
+  .top-links a:hover{border-color:var(--red);color:var(--red);}
 </style>
 </head>
 <body>
+
 <div class="hero">
   <div class="wrap">
-    <div class="eyebrow">South Kanto NAR AI · SPAT4</div>
-    <h1>トリプル馬単</h1>
-    <p>各場の最終3レースの馬単を3連続的中させる企画。1着候補(本命・対抗)×2着候補(複勝率上位)の
-      フォーメーションを、各レースごとに提示します。</p>
-    <a class="back-link" href="index.html">← 本日の予想に戻る</a>
+    <div class="eyebrow">South Kanto NAR AI · Daily Report</div>
+    <h1>南関東競馬AI予想</h1>
+    <div class="updated">2026-09-07 分 · 最終更新: 2026-09-06 11:34</div>
+    <div class="top-links">
+      <a href="triple.html">トリプル馬単 →</a>
+      <a href="courses.html">コース特徴 →</a>
+    </div>
   </div>
 </div>
+
 <div class="wrap">
-<p class="empty">対象レース(3R以上開催の場)がありません。</p>
-<p class="disclaimer">
-  フォーメーションはAI予想確率に基づく機械的な提案です。的中を保証するものではありません。
-  投票の最終判断はご自身の責任で行ってください。
-</p>
+
+        <section class="track-block">
+          <div class="track-block-head"><h2>名古屋</h2>
+            <a href="courses.html#名古屋" style="font-size:11px;color:var(--red);">コース特徴 →</a></div>
+          <p class="track-note-mini">1周1180m・直線約240m。3・4コーナーに入口が緩く出口が急なスパイラルカーブを採用。小回りで先行馬がやや有利とされる。</p>
+          <div class="race-grid">
+            <a class="race-tile" href="races/名古屋_1.html">
+              <span class="rn">1R</span>
+              <span class="rtime">14:30</span>
+              <span class="rhonmei">◎マコトエウロペ</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_2.html">
+              <span class="rn">2R</span>
+              <span class="rtime">15:10</span>
+              <span class="rhonmei">◎コパノルーカス</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_3.html">
+              <span class="rn">3R</span>
+              <span class="rtime">15:40</span>
+              <span class="rhonmei">◎ビアーレ</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_4.html">
+              <span class="rn">4R</span>
+              <span class="rtime">16:15</span>
+              <span class="rhonmei">◎ノーブルクインダム</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_5.html">
+              <span class="rn">5R</span>
+              <span class="rtime">16:45</span>
+              <span class="rhonmei">◎クロメヒョウ</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_6.html">
+              <span class="rn">6R</span>
+              <span class="rtime">17:15</span>
+              <span class="rhonmei">◎ゴールドレター</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_7.html">
+              <span class="rn">7R</span>
+              <span class="rtime">17:50</span>
+              <span class="rhonmei">◎ミートザターゲット</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_8.html">
+              <span class="rn">8R</span>
+              <span class="rtime">18:20</span>
+              <span class="rhonmei">◎テルケンレントラー</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_9.html">
+              <span class="rn">9R</span>
+              <span class="rtime">18:50</span>
+              <span class="rhonmei">◎シヴァールバーニ</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_10.html">
+              <span class="rn">10R</span>
+              <span class="rtime">19:30</span>
+              <span class="rhonmei">◎ラヴァーズブルー</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_11.html">
+              <span class="rn">11R</span>
+              <span class="rtime">20:05</span>
+              <span class="rhonmei">◎カワテンマックス</span>
+            </a>
+            <a class="race-tile" href="races/名古屋_12.html">
+              <span class="rn">12R</span>
+              <span class="rtime">20:40</span>
+              <span class="rhonmei">◎コスモアマデウス</span>
+            </a></div>
+        </section>
+        <section class="track-block">
+          <div class="track-block-head"><h2>川崎</h2>
+            <a href="courses.html#川崎" style="font-size:11px;color:var(--red);">コース特徴 →</a></div>
+          <p class="track-note-mini">1周1200m・直線約300mで、周長の割に直線が長め(その分コーナーが急)なのが特徴。左回り。小回りでコーナリング技術が問われ、外を回すとロスが大きくなりやすいとされる。</p>
+          <div class="race-grid">
+            <a class="race-tile" href="races/川崎_1.html">
+              <span class="rn">1R</span>
+              <span class="rtime">15:00</span>
+              <span class="rhonmei">◎コーリングヘニー</span>
+            </a>
+            <a class="race-tile" href="races/川崎_2.html">
+              <span class="rn">2R</span>
+              <span class="rtime">15:30</span>
+              <span class="rhonmei">◎バースデイ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_3.html">
+              <span class="rn">3R</span>
+              <span class="rtime">16:00</span>
+              <span class="rhonmei">◎ジョリージャイヴ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_4.html">
+              <span class="rn">4R</span>
+              <span class="rtime">16:30</span>
+              <span class="rhonmei">◎アップアップアップ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_5.html">
+              <span class="rn">5R</span>
+              <span class="rtime">17:00</span>
+              <span class="rhonmei">◎アフロガル</span>
+            </a>
+            <a class="race-tile" href="races/川崎_6.html">
+              <span class="rn">6R</span>
+              <span class="rtime">17:30</span>
+              <span class="rhonmei">◎モコモコ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_7.html">
+              <span class="rn">7R</span>
+              <span class="rtime">18:00</span>
+              <span class="rhonmei">◎ポッドシャンク</span>
+            </a>
+            <a class="race-tile" href="races/川崎_8.html">
+              <span class="rn">8R</span>
+              <span class="rtime">18:30</span>
+              <span class="rhonmei">◎ノリノリソックス</span>
+            </a>
+            <a class="race-tile" href="races/川崎_9.html">
+              <span class="rn">9R</span>
+              <span class="rtime">19:05</span>
+              <span class="rhonmei">◎グランドマーメイド</span>
+            </a>
+            <a class="race-tile" href="races/川崎_10.html">
+              <span class="rn">10R</span>
+              <span class="rtime">19:40</span>
+              <span class="rhonmei">◎コルネットロッソ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_11.html">
+              <span class="rn">11R</span>
+              <span class="rtime">20:15</span>
+              <span class="rhonmei">◎スターグリップ</span>
+            </a>
+            <a class="race-tile" href="races/川崎_12.html">
+              <span class="rn">12R</span>
+              <span class="rtime">20:50</span>
+              <span class="rhonmei">◎クリノウィリアム</span>
+            </a></div>
+        </section>
 </div>
+
+<footer>keiba_ai (南関東版) · model_early_urawa · 毎朝GitHub Actionsで自動更新</footer>
+
 </body>
 </html>
