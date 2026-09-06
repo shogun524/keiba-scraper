@@ -17,7 +17,10 @@ from playwright.sync_api import sync_playwright
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("nar_netkeiba_scraper")
 
-TRACK_CODES = {"浦和": "42", "船橋": "43", "大井": "44", "川崎": "45"}
+TRACK_CODES = {
+    "門別": "30", "盛岡": "35", "浦和": "42", "船橋": "43", "大井": "44", "川崎": "45",
+    "金沢": "46", "名古屋": "48", "園田": "50",
+}
 BASE_URL = "https://nar.netkeiba.com/race/shutuba_past.html"  # newspaper.htmlはプレミアム限定情報が多いため変更
 REQUEST_INTERVAL_SEC = (3.0, 6.0)
 MAX_RACES_PER_DAY = 12
