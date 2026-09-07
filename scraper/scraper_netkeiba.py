@@ -19,7 +19,7 @@ logger = logging.getLogger("nar_netkeiba_scraper")
 
 TRACK_CODES = {
     "門別": "30", "盛岡": "35", "浦和": "42", "船橋": "43", "大井": "44", "川崎": "45",
-    "金沢": "46", "名古屋": "48", "園田": "50",
+    "金沢": "46", "名古屋": "48", "園田": "50", "高知": "54", "佐賀": "55",
 }
 BASE_URL = "https://nar.netkeiba.com/race/shutuba_past.html"  # newspaper.htmlはプレミアム限定情報が多いため変更
 REQUEST_INTERVAL_SEC = (3.0, 6.0)
