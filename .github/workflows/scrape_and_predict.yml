@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: "取得対象日 (YYYY-MM-DD、空なら翌日)"
+        description: "取得対象日 (YYYY-MM-DD、空なら実行時点のJST日付)"
         required: false
         default: ""
 
@@ -32,7 +32,7 @@ jobs:
         run: |
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then
-            DATE=$(date -d "+1 day" +%Y-%m-%d)
+            DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
           fi
           python scraper_netkeiba.py --date "$DATE"
 
@@ -48,7 +48,7 @@ jobs:
         run: |
           DATE="${{ github.event.inputs.date }}"
           if [ -z "$DATE" ]; then
-            DATE=$(date -d "+1 day" +%Y-%m-%d)
+            DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
           fi
           python generate_dashboard.py --date "$DATE"
 
