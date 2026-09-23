@@ -540,59 +540,44 @@ def generate_dashboard(date_str: str) -> Path:
 
 # 3レース合計の目安予算。1点100円換算でおよそこの金額前後になるよう、
 # 各レースの候補数を後段(trim_formations_to_budget)で調整する。
-TARGET_TOTAL_COMBOS = 100  # 100円/点 想定で目安 約1万円
+# 1場(3レース合計)あたりの目安予算。1点100円換算でこの金額前後まで
+# 「使い切る」ように候補を広げる(以前は上限止まりで、実際には予算を
+# 大きく下回ることが多かったため、下からではなく積極的に埋めるよう変更)。
+TARGET_TOTAL_COMBOS = 100  # 100円/点 想定で目安 約1万円/場
 
 
-def build_umatan_formation(df_race: pd.DataFrame, min_first: int = 2, min_second: int = 2,
-                            max_first: int = 4, max_second: int = 5) -> dict:
-    """1レース分の馬単フォーメーション(1着候補×2着候補)を組み立てる。
+def _sorted_candidates(df_race: pd.DataFrame, prob_col: str, cap: int = 8) -> tuple:
+    """prob_col(p_win または p_top3)の値が高い順に、馬番と確率のリストを返す。
+    上位 cap 頭まで(それ以上は現実的に候補になり得ないので保持しない)。"""
+    df_sorted = df_race.sort_values(prob_col, ascending=False).reset_index(drop=True).head(cap)
+    umaban = df_sorted["馬番"].astype(int).tolist()
+    probs = [round(float(x), 3) for x in df_sorted[prob_col].tolist()]
+    return umaban, probs
+
+
+def build_umatan_formation(df_race: pd.DataFrame) -> dict:
+    """1レース分の、単勝率順・複勝率順の候補リスト(未確定・全頭分)を用意する。
 
     以前は「単勝率ランキング1位=1着候補」のように順位だけで機械的に絞っていたが、
     これだと例えば「1着率18%・2着率17%で実質同格」の馬を対抗だけに落としたり、
     「1着率は低いが5走中2回は馬券に絡む(複勝率が高い)」紐候補を早々に切り捨てて
     しまい、絞り込みすぎて本来当たるはずの馬券を逃す原因になっていた。
 
-    そこで、順位ではなく実際の確率の値そのものを見て候補を選ぶ:
-    - 1着候補: 単勝率(p_win)上位から、確率が僅差で並んでいる限り候補に加える
-      (例: 1位18%・2位17%ならどちらも実力伯仲として2頭とも残す。
-       1位30%・2位8%のように差が大きければ1位だけに絞る、ということはせず、
-       最低でも2頭は必ず1着候補に入れる)。
-    - 2着候補: 単勝率とは別に、複勝率(p_top3)の値だけを見て独立に選ぶ。
-      単勝率が低くても複勝率が高い「1着は厳しいが3着内には来やすい」馬を
-      拾うためで、こちらも僅差が続く限り候補に加え、最低2頭は必ず残す。
-
-    ここで作る候補はまだ「実際の確率を踏まえた妥当な候補」であり、点数の
-    絞り込み(予算内に収める作業)は generate_triple_umatan_page 側の
-    trim_formations_to_budget で3レース合計を見ながら行う。
+    ここでは1着候補は単勝率(p_win)、2着候補は複勝率(p_top3)で独立に並べた
+    候補リストを用意するだけに留め、実際に何頭を候補として採用するかは
+    fit_formations_to_budget が3レース合計の目安予算(1場あたり約1万円)を
+    見ながら、確率の高い候補から順に埋めていく形で決める。
     """
-    GAP = 0.035  # この確率差未満なら「僅差=実力伯仲」とみなして候補に加え続ける
-
-    df_win_sorted = df_race.sort_values("p_win", ascending=False).reset_index(drop=True)
-    p_win = df_win_sorted["p_win"].tolist()
-    n = len(df_win_sorted)
-    n_first = min(min_first, n)
-    while n_first < n and n_first < max_first and (p_win[n_first - 1] - p_win[n_first]) < GAP:
-        n_first += 1
-    first_candidates = df_win_sorted.head(n_first)
-    first_umaban = first_candidates["馬番"].astype(int).tolist()
-    first_probs = [round(float(x), 3) for x in first_candidates["p_win"].tolist()]
-
-    df_top3_sorted = df_race.sort_values("p_top3", ascending=False).reset_index(drop=True)
-    p_top3 = df_top3_sorted["p_top3"].tolist()
-    n2 = len(df_top3_sorted)
-    n_second = min(min_second, n2)
-    while n_second < n2 and n_second < max_second and (p_top3[n_second - 1] - p_top3[n_second]) < GAP:
-        n_second += 1
-    second_candidates = df_top3_sorted.head(n_second)
-    second_umaban = second_candidates["馬番"].astype(int).tolist()
-    second_probs = [round(float(x), 3) for x in second_candidates["p_top3"].tolist()]
-
-    return _combos_from_candidates(first_umaban, first_probs, second_umaban, second_probs)
+    win_umaban, win_probs = _sorted_candidates(df_race, "p_win")
+    top3_umaban, top3_probs = _sorted_candidates(df_race, "p_top3")
+    return {
+        "win_umaban": win_umaban, "win_probs": win_probs,
+        "top3_umaban": top3_umaban, "top3_probs": top3_probs,
+    }
 
 
 def _combos_from_candidates(first_umaban, first_probs, second_umaban, second_probs) -> dict:
-    """1着候補・2着候補のリストから組み合わせと「厳選1点」を組み立てるヘルパー。
-    trim_formations_to_budget が候補を間引いた後にも呼び直す。"""
+    """1着候補・2着候補のリストから組み合わせと「厳選1点」を組み立てるヘルパー。"""
     win_p = dict(zip(first_umaban, first_probs))
     top3_p = dict(zip(second_umaban, second_probs))
 
@@ -608,38 +593,72 @@ def _combos_from_candidates(first_umaban, first_probs, second_umaban, second_pro
     }
 
 
-def trim_formations_to_budget(formations: list, target_total: int = TARGET_TOTAL_COMBOS,
-                               min_first: int = 2, min_second: int = 2) -> list:
-    """3レース分のフォーメーションを、合計点数が target_total 前後(目安予算)に
-    収まるまで間引く。1着候補・2着候補それぞれ最低数(min_first/min_second)は
-    死守し、各レースの候補のうち確率が最も低い(末尾の)馬から順に削る。
-    3レースとも最低ライン(2×2=4点)まで絞っても予算を超える場合はそこで打ち切る。"""
-    formations = [dict(f) for f in formations]
+def fit_formations_to_budget(raw_races: list, target_total: int = TARGET_TOTAL_COMBOS,
+                              min_first: int = 2, min_second: int = 2,
+                              max_first: int = 5, max_second: int = 6,
+                              overshoot_tolerance: float = 1.3) -> list:
+    """3レース分の候補リストから、1着最低min_first頭・2着最低min_second頭を
+    土台にしつつ、3レース合計の点数が目安予算(target_total、約1万円分)に
+    近づくまで、確率が最も高い「次点」候補から順に採用頭数を増やしていく。
 
-    def rebuild(f):
-        new = _combos_from_candidates(f["first"], f["first_probs"], f["second"], f["second_probs"])
-        f.update(new)
+    以前のバージョンは上限から間引く(絞る)方向だけだったため、実際には
+    最低ラインのまま(予算を大きく下回ったまま)になりがちで、結果的に
+    「複数点買うのは許容している」というユーザーの意図より少ない点数に
+    なってしまっていた。ここでは逆に、予算に収まる範囲で積極的に候補を
+    「増やす」ことで、1場あたり大体1万円前後を使い切る形にする。
+    """
+    n_first = [min(min_first, len(r["win_umaban"])) for r in raw_races]
+    n_second = [min(min_second, len(r["top3_umaban"])) for r in raw_races]
 
-    def total():
+    def leg_combo_count(i):
+        # 1着候補と2着候補の馬番は重複しうる(同じ馬が両方の上位に来ることが多い)ため、
+        # 単純に n_first * n_second すると同じ馬同士のペア(f==s、実際には成立しない)を
+        # 過大にカウントしてしまう。実際に成立する組み合わせ数を数える。
+        first_set = raw_races[i]["win_umaban"][:n_first[i]]
+        second_set = raw_races[i]["top3_umaban"][:n_second[i]]
+        return sum(1 for f in first_set for s in second_set if f != s)
+
+    def total_estimate():
         t = 1
-        for f in formations:
-            t *= max(len(f["combos"]), 1)
+        for i in range(len(raw_races)):
+            t *= max(leg_combo_count(i), 1)
         return t
 
-    while total() > target_total:
-        # 最も点数が多いレースから、確率が最も低い候補を1頭ずつ間引く
-        idx = max(range(len(formations)), key=lambda i: len(formations[i]["combos"]))
-        f = formations[idx]
-        if len(f["second"]) > min_second:
-            f["second"].pop()
-            f["second_probs"].pop()
-        elif len(f["first"]) > min_first:
-            f["first"].pop()
-            f["first_probs"].pop()
+    while total_estimate() < target_total:
+        # 次に1頭追加できる候補(1着枠・2着枠それぞれ)のうち、
+        # 確率が最も高いものを選んで採用する
+        options = []
+        for i, r in enumerate(raw_races):
+            if n_first[i] < min(max_first, len(r["win_umaban"])):
+                options.append((r["win_probs"][n_first[i]], i, "first"))
+            if n_second[i] < min(max_second, len(r["top3_umaban"])):
+                options.append((r["top3_probs"][n_second[i]], i, "second"))
+        if not options:
+            break
+        options.sort(key=lambda x: -x[0])
+        _, i, kind = options[0]
+        prev_total = total_estimate()
+        if kind == "first":
+            n_first[i] += 1
         else:
-            break  # これ以上は絞れない(最低ラインに到達)
-        rebuild(f)
+            n_second[i] += 1
+        new_total = total_estimate()
+        # 1回の追加で予算を大きく超えてしまう場合、超過後の方が予算に近ければ
+        # 採用したままにし、そうでなければ元に戻して打ち切る
+        if new_total > target_total and new_total > target_total * overshoot_tolerance:
+            if kind == "first":
+                n_first[i] -= 1
+            else:
+                n_second[i] -= 1
+            break
 
+    formations = []
+    for i, r in enumerate(raw_races):
+        first_umaban = r["win_umaban"][:n_first[i]]
+        first_probs = r["win_probs"][:n_first[i]]
+        second_umaban = r["top3_umaban"][:n_second[i]]
+        second_probs = r["top3_probs"][:n_second[i]]
+        formations.append(_combos_from_candidates(first_umaban, first_probs, second_umaban, second_probs))
     return formations
 
 
@@ -656,7 +675,7 @@ def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
         target_races = race_nums[-3:]
 
         raw_formations = [build_umatan_formation(df_track[df_track["race_num"] == rn]) for rn in target_races]
-        formations = trim_formations_to_budget(raw_formations)
+        formations = fit_formations_to_budget(raw_formations)
 
         legs_html = []
         total_combo_count = 1
@@ -690,8 +709,8 @@ def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
           <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">{best_chain_str}</span></p>
           <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 {total_combo_count} 通り
             (1点100円換算で目安 約{budget_yen:,}円。各レースの候補は単勝率・複勝率の実際の値を見て
-            選んでおり、僅差の馬は取りこぼさないよう複数頭残した上で、3レース合計が
-            大体1万円前後で買える点数になるよう調整しています)</p>
+            確率の高い順に選んでおり、1場(3レース合計)で大体1万円前後を使い切る形まで
+            複数点を積極的に採用しています)</p>
           <div class="legs-row">{''.join(legs_html)}</div>
         </section>""")
 
@@ -763,8 +782,8 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
     <div class="eyebrow">South Kanto NAR AI · SPAT4</div>
     <h1>トリプル馬単</h1>
     <p>各場の最終3レースの馬単を3連続的中させる企画。1着候補は単勝率、2着候補は複勝率の
-      実際の値を見て、僅差の馬は取りこぼさないよう複数頭残しつつ、3レース合計が
-      大体1万円前後(1点100円換算)で買える点数に収まるよう自動調整します。
+      実際の値を見て、確率の高い候補から複数頭を積極的に採用し、1場(3レース合計)で
+      大体1万円前後(1点100円換算)を使い切る形にフォーメーションを組みます。
       まず「厳選1点」だけでも狙えます。</p>
     <a class="back-link" href="index.html">← 本日の予想に戻る</a>
   </div>
