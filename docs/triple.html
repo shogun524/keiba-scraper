@@ -29,10 +29,17 @@
     display:flex;align-items:baseline;gap:10px;}
   .range-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);border:1px solid var(--gold);
     border-radius:20px;padding:2px 10px;}
-  .total-combo{font-size:12px;color:#c9c2b0;margin-bottom:16px;}
+  .total-combo{font-size:12px;color:#c9c2b0;margin-bottom:16px;line-height:1.6;}
+  .best-pick{font-size:13px;color:var(--paper-card);background:rgba(169,131,47,0.15);
+    border:1px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:10px;}
+  .best-pick-nums{font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--gold);}
   .legs-row{display:flex;gap:14px;flex-wrap:wrap;}
   .leg-card{background:rgba(255,255,255,0.05);border-radius:6px;padding:14px 16px;flex:1;min-width:220px;}
-  .leg-r{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;}
+  .leg-r{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;
+    display:flex;align-items:center;gap:8px;}
+  .conf-badge{font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;padding:1px 8px;border-radius:10px;}
+  .conf-badge.conf-strong{background:var(--gold);color:var(--ink);}
+  .conf-badge.conf-mixed{background:rgba(255,255,255,0.15);color:var(--paper-card);}
   .leg-formation{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
   .formation-label{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);}
   .formation-nums{font-family:'DM Mono',monospace;font-size:15px;color:var(--paper-card);font-weight:500;}
@@ -55,8 +62,9 @@
   <div class="wrap">
     <div class="eyebrow">South Kanto NAR AI · SPAT4</div>
     <h1>トリプル馬単</h1>
-    <p>各場の最終3レースの馬単を3連続的中させる企画。1着候補(本命・対抗)×2着候補(複勝率上位)の
-      フォーメーションを、各レースごとに提示します。</p>
+    <p>各場の最終3レースの馬単を3連続的中させる企画。各レースの自信度(本命の抜け具合)に応じて
+      候補数を自動で絞り込み、1レースあたり最大3点・3レース合計でも最大27通り程度に収まる
+      現実的な点数のフォーメーションを提示します。まず「厳選1点」だけでも狙えます。</p>
     <a class="back-link" href="index.html">← 本日の予想に戻る</a>
   </div>
 </div>
@@ -64,119 +72,125 @@
 
         <section class="track-block" id="園田">
           <h2 class="track-h">園田 <span class="range-badge">10〜12R</span></h2>
-          <p class="total-combo">3レース合計 1728 通り
-            (各レースの馬単フォーメーションから1点ずつ選んで3連続的中を狙う)</p>
+          <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">9→7　⇒　11→3　⇒　5→4</span></p>
+          <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 27 通り
+            (各レースの厳選フォーメーションから1点ずつ選んで3連続的中を狙う。以前は最大3375通りでしたが、
+            自信度に応じて候補数を絞り込み、現実的な点数まで圧縮しています)</p>
           <div class="legs-row">
         <div class="leg-card">
-          <div class="leg-r">10R</div>
+          <div class="leg-r">10R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">1 2 3</span>
+            <span class="formation-nums">9</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">1 2 3 4 5</span>
+            <span class="formation-nums">7 5 4</span>
           </div>
-          <div class="leg-combos">1→2、1→3、1→4、1→5、2→1、2→3、2→4、2→5、3→1、3→2、3→4、3→5(12点)</div>
+          <div class="leg-combos">9→7、9→5、9→4(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">11R</div>
+          <div class="leg-r">11R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">1 2 3</span>
+            <span class="formation-nums">11</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">1 2 3 4 5</span>
+            <span class="formation-nums">3 4 6</span>
           </div>
-          <div class="leg-combos">1→2、1→3、1→4、1→5、2→1、2→3、2→4、2→5、3→1、3→2、3→4、3→5(12点)</div>
+          <div class="leg-combos">11→3、11→4、11→6(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">12R</div>
+          <div class="leg-r">12R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">1 2 3</span>
+            <span class="formation-nums">5</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">1 2 4 3 5</span>
+            <span class="formation-nums">4 1 8</span>
           </div>
-          <div class="leg-combos">1→2、1→4、1→3、1→5、2→1、2→4、2→3、2→5、3→1、3→2、3→4、3→5(12点)</div>
+          <div class="leg-combos">5→4、5→1、5→8(3点)</div>
         </div></div>
         </section>
         <section class="track-block" id="浦和">
           <h2 class="track-h">浦和 <span class="range-badge">10〜12R</span></h2>
-          <p class="total-combo">3レース合計 1728 通り
-            (各レースの馬単フォーメーションから1点ずつ選んで3連続的中を狙う)</p>
+          <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">4→1　⇒　4→12　⇒　3→11</span></p>
+          <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 27 通り
+            (各レースの厳選フォーメーションから1点ずつ選んで3連続的中を狙う。以前は最大3375通りでしたが、
+            自信度に応じて候補数を絞り込み、現実的な点数まで圧縮しています)</p>
           <div class="legs-row">
         <div class="leg-card">
-          <div class="leg-r">10R</div>
+          <div class="leg-r">10R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">1 3 4</span>
+            <span class="formation-nums">4</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">1 3 4 5 7</span>
+            <span class="formation-nums">1 3 5</span>
           </div>
-          <div class="leg-combos">1→3、1→4、1→5、1→7、3→1、3→4、3→5、3→7、4→1、4→3、4→5、4→7(12点)</div>
+          <div class="leg-combos">4→1、4→3、4→5(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">11R</div>
+          <div class="leg-r">11R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">2 12 11</span>
+            <span class="formation-nums">4</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">2 12 11 7 4</span>
+            <span class="formation-nums">12 2 11</span>
           </div>
-          <div class="leg-combos">2→12、2→11、2→7、2→4、12→2、12→11、12→7、12→4、11→2、11→12、11→7、11→4(12点)</div>
+          <div class="leg-combos">4→12、4→2、4→11(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">12R</div>
+          <div class="leg-r">12R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">3 2 5</span>
+            <span class="formation-nums">3</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">3 2 5 6 4</span>
+            <span class="formation-nums">11 2 8</span>
           </div>
-          <div class="leg-combos">3→2、3→5、3→6、3→4、2→3、2→5、2→6、2→4、5→3、5→2、5→6、5→4(12点)</div>
+          <div class="leg-combos">3→11、3→2、3→8(3点)</div>
         </div></div>
         </section>
         <section class="track-block" id="門別">
           <h2 class="track-h">門別 <span class="range-badge">10〜12R</span></h2>
-          <p class="total-combo">3レース合計 1728 通り
-            (各レースの馬単フォーメーションから1点ずつ選んで3連続的中を狙う)</p>
+          <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">6→1　⇒　7→3　⇒　7→3</span></p>
+          <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 27 通り
+            (各レースの厳選フォーメーションから1点ずつ選んで3連続的中を狙う。以前は最大3375通りでしたが、
+            自信度に応じて候補数を絞り込み、現実的な点数まで圧縮しています)</p>
           <div class="legs-row">
         <div class="leg-card">
-          <div class="leg-r">10R</div>
+          <div class="leg-r">10R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">11 9 6</span>
+            <span class="formation-nums">6</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">11 9 6 1 8</span>
+            <span class="formation-nums">1 11 2</span>
           </div>
-          <div class="leg-combos">11→9、11→6、11→1、11→8、9→11、9→6、9→1、9→8、6→11、6→9、6→1、6→8(12点)</div>
+          <div class="leg-combos">6→1、6→11、6→2(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">11R</div>
+          <div class="leg-r">11R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">7 3 5</span>
+            <span class="formation-nums">7</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">7 3 5 1 4</span>
+            <span class="formation-nums">3 6 1</span>
           </div>
-          <div class="leg-combos">7→3、7→5、7→1、7→4、3→7、3→5、3→1、3→4、5→7、5→3、5→1、5→4(12点)</div>
+          <div class="leg-combos">7→3、7→6、7→1(3点)</div>
         </div>
         <div class="leg-card">
-          <div class="leg-r">12R</div>
+          <div class="leg-r">12R <span class="conf-badge conf-strong">本命堅め</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
-            <span class="formation-nums">7 2 3</span>
+            <span class="formation-nums">7</span>
             <span class="arrow">→</span>
             <span class="formation-label">2着</span>
-            <span class="formation-nums">7 2 3 6 8</span>
+            <span class="formation-nums">3 2 6</span>
           </div>
-          <div class="leg-combos">7→2、7→3、7→6、7→8、2→7、2→3、2→6、2→8、3→7、3→2、3→6、3→8(12点)</div>
+          <div class="leg-combos">7→3、7→2、7→6(3点)</div>
         </div></div>
         </section>
 <p class="disclaimer">
