@@ -538,59 +538,109 @@ def generate_dashboard(date_str: str) -> Path:
     return out_path
 
 
-def build_umatan_formation(df_race: pd.DataFrame, max_combos_per_leg: int = 3) -> dict:
+# 3レース合計の目安予算。1点100円換算でおよそこの金額前後になるよう、
+# 各レースの候補数を後段(trim_formations_to_budget)で調整する。
+TARGET_TOTAL_COMBOS = 100  # 100円/点 想定で目安 約1万円
+
+
+def build_umatan_formation(df_race: pd.DataFrame, min_first: int = 2, min_second: int = 2,
+                            max_first: int = 4, max_second: int = 5) -> dict:
     """1レース分の馬単フォーメーション(1着候補×2着候補)を組み立てる。
 
-    従来は 1着候補3頭×2着候補5頭=最大15点 という固定フォーメーションで、
-    これを3レース掛け合わせるトリプル馬単では最大 15×15×15=3375通りにも
-    なってしまい、実際には現実的に買える点数を大きく超えていた。
+    以前は「単勝率ランキング1位=1着候補」のように順位だけで機械的に絞っていたが、
+    これだと例えば「1着率18%・2着率17%で実質同格」の馬を対抗だけに落としたり、
+    「1着率は低いが5走中2回は馬券に絡む(複勝率が高い)」紐候補を早々に切り捨てて
+    しまい、絞り込みすぎて本来当たるはずの馬券を逃す原因になっていた。
 
-    ここではレースごとの「自信度」(1着候補の単勝率が2位以下をどれだけ
-    突き放しているか)に応じて候補数を動的に絞り込み、1レースあたりの
-    点数を max_combos_per_leg (デフォルト3点) に収める。
-    - 本命が単独で頭一つ抜けている(僅差でない)レース → 1着は1頭に固定し、
-      浮いた分だけ2着候補を広げる(最大3点)。
-    - 本命・対抗が拮抗している(僅差)レース → 1着候補を2頭に広げる代わりに
-      2着候補を絞る(最大2点)。
-    この結果、3レース合計でも最大 3×3×3=27通り、自信度が高いレースが
-    含まれる日は一桁〜十数通り程度まで圧縮され、現実的に購入できる
-    点数になる。
+    そこで、順位ではなく実際の確率の値そのものを見て候補を選ぶ:
+    - 1着候補: 単勝率(p_win)上位から、確率が僅差で並んでいる限り候補に加える
+      (例: 1位18%・2位17%ならどちらも実力伯仲として2頭とも残す。
+       1位30%・2位8%のように差が大きければ1位だけに絞る、ということはせず、
+       最低でも2頭は必ず1着候補に入れる)。
+    - 2着候補: 単勝率とは別に、複勝率(p_top3)の値だけを見て独立に選ぶ。
+      単勝率が低くても複勝率が高い「1着は厳しいが3着内には来やすい」馬を
+      拾うためで、こちらも僅差が続く限り候補に加え、最低2頭は必ず残す。
+
+    ここで作る候補はまだ「実際の確率を踏まえた妥当な候補」であり、点数の
+    絞り込み(予算内に収める作業)は generate_triple_umatan_page 側の
+    trim_formations_to_budget で3レース合計を見ながら行う。
     """
-    df_sorted = df_race.sort_values("p_win", ascending=False)
-    p_win_top = float(df_sorted.iloc[0]["p_win"])
-    p_win_2nd = float(df_sorted.iloc[1]["p_win"]) if len(df_sorted) > 1 else 0.0
+    GAP = 0.035  # この確率差未満なら「僅差=実力伯仲」とみなして候補に加え続ける
 
-    # 1位と2位の単勝率の差が小さい(僅差)場合のみ1着候補を2頭に広げる
-    CONFIDENCE_GAP = 0.08  # このポイント差以上あれば「本命堅め」とみなす
-    if len(df_sorted) > 1 and (p_win_top - p_win_2nd) < CONFIDENCE_GAP:
-        n_first = 2
-        confidence = "混戦"
-    else:
-        n_first = 1
-        confidence = "本命堅め"
-
-    first_candidates = df_sorted.head(n_first)
+    df_win_sorted = df_race.sort_values("p_win", ascending=False).reset_index(drop=True)
+    p_win = df_win_sorted["p_win"].tolist()
+    n = len(df_win_sorted)
+    n_first = min(min_first, n)
+    while n_first < n and n_first < max_first and (p_win[n_first - 1] - p_win[n_first]) < GAP:
+        n_first += 1
+    first_candidates = df_win_sorted.head(n_first)
     first_umaban = first_candidates["馬番"].astype(int).tolist()
+    first_probs = [round(float(x), 3) for x in first_candidates["p_win"].tolist()]
 
-    # 2着候補数 = 点数上限 ÷ 1着候補数(切り捨て、最低1頭は確保)
-    n_second = max(1, max_combos_per_leg // n_first)
-    second_pool = df_race[~df_race["馬番"].isin(first_umaban)].sort_values("p_top3", ascending=False)
-    second_umaban = second_pool.head(n_second)["馬番"].astype(int).tolist()
+    df_top3_sorted = df_race.sort_values("p_top3", ascending=False).reset_index(drop=True)
+    p_top3 = df_top3_sorted["p_top3"].tolist()
+    n2 = len(df_top3_sorted)
+    n_second = min(min_second, n2)
+    while n_second < n2 and n_second < max_second and (p_top3[n_second - 1] - p_top3[n_second]) < GAP:
+        n_second += 1
+    second_candidates = df_top3_sorted.head(n_second)
+    second_umaban = second_candidates["馬番"].astype(int).tolist()
+    second_probs = [round(float(x), 3) for x in second_candidates["p_top3"].tolist()]
 
-    combos = []
-    for f in first_umaban:
-        for s in second_umaban:
-            if f != s:
-                combos.append((f, s))
+    return _combos_from_candidates(first_umaban, first_probs, second_umaban, second_probs)
+
+
+def _combos_from_candidates(first_umaban, first_probs, second_umaban, second_probs) -> dict:
+    """1着候補・2着候補のリストから組み合わせと「厳選1点」を組み立てるヘルパー。
+    trim_formations_to_budget が候補を間引いた後にも呼び直す。"""
+    win_p = dict(zip(first_umaban, first_probs))
+    top3_p = dict(zip(second_umaban, second_probs))
+
+    combos = [(f, s) for f in first_umaban for s in second_umaban if f != s]
+    # 厳選1点: 単勝率×複勝率の推定同時確率が最も高い組み合わせ
+    best_combo = max(combos, key=lambda fs: win_p[fs[0]] * top3_p[fs[1]]) if combos else None
 
     return {
-        "first": first_umaban,
-        "second": second_umaban,
+        "first": first_umaban, "first_probs": first_probs,
+        "second": second_umaban, "second_probs": second_probs,
         "combos": combos,
-        "confidence": confidence,
-        # 最も自信度の高い1着×2着の組み合わせ(1点だけ買うならこれ)
-        "best_combo": combos[0] if combos else None,
+        "best_combo": best_combo,
     }
+
+
+def trim_formations_to_budget(formations: list, target_total: int = TARGET_TOTAL_COMBOS,
+                               min_first: int = 2, min_second: int = 2) -> list:
+    """3レース分のフォーメーションを、合計点数が target_total 前後(目安予算)に
+    収まるまで間引く。1着候補・2着候補それぞれ最低数(min_first/min_second)は
+    死守し、各レースの候補のうち確率が最も低い(末尾の)馬から順に削る。
+    3レースとも最低ライン(2×2=4点)まで絞っても予算を超える場合はそこで打ち切る。"""
+    formations = [dict(f) for f in formations]
+
+    def rebuild(f):
+        new = _combos_from_candidates(f["first"], f["first_probs"], f["second"], f["second_probs"])
+        f.update(new)
+
+    def total():
+        t = 1
+        for f in formations:
+            t *= max(len(f["combos"]), 1)
+        return t
+
+    while total() > target_total:
+        # 最も点数が多いレースから、確率が最も低い候補を1頭ずつ間引く
+        idx = max(range(len(formations)), key=lambda i: len(formations[i]["combos"]))
+        f = formations[idx]
+        if len(f["second"]) > min_second:
+            f["second"].pop()
+            f["second_probs"].pop()
+        elif len(f["first"]) > min_first:
+            f["first"].pop()
+            f["first_probs"].pop()
+        else:
+            break  # これ以上は絞れない(最低ラインに到達)
+        rebuild(f)
+
+    return formations
 
 
 def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
@@ -604,38 +654,44 @@ def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
         if len(race_nums) < 3:
             continue
         target_races = race_nums[-3:]
+
+        raw_formations = [build_umatan_formation(df_track[df_track["race_num"] == rn]) for rn in target_races]
+        formations = trim_formations_to_budget(raw_formations)
+
         legs_html = []
         total_combo_count = 1
         best_chain = []
-        for rn in target_races:
-            df_race = df_track[df_track["race_num"] == rn]
-            formation = build_umatan_formation(df_race)
+        for rn, formation in zip(target_races, formations):
             total_combo_count *= max(len(formation["combos"]), 1)
             if formation["best_combo"]:
                 best_chain.append(formation["best_combo"])
             combo_str = "、".join(f"{f}→{s}" for f, s in formation["combos"])
-            conf_class = "conf-strong" if formation["confidence"] == "本命堅め" else "conf-mixed"
+            first_str = " ".join(f"{u}({p*100:.0f}%)" for u, p in zip(formation["first"], formation["first_probs"]))
+            second_str = " ".join(f"{u}({p*100:.0f}%)" for u, p in zip(formation["second"], formation["second_probs"]))
             legs_html.append(f"""
         <div class="leg-card">
-          <div class="leg-r">{rn}R <span class="conf-badge {conf_class}">{formation['confidence']}</span></div>
+          <div class="leg-r">{rn}R <span class="pt-badge">{len(formation['combos'])}点</span></div>
           <div class="leg-formation">
-            <span class="formation-label">1着</span>
-            <span class="formation-nums">{' '.join(str(x) for x in formation['first'])}</span>
-            <span class="arrow">→</span>
-            <span class="formation-label">2着</span>
-            <span class="formation-nums">{' '.join(str(x) for x in formation['second'])}</span>
+            <span class="formation-label">1着(単勝率)</span>
+            <span class="formation-nums">{first_str}</span>
           </div>
-          <div class="leg-combos">{combo_str}({len(formation['combos'])}点)</div>
+          <div class="leg-formation">
+            <span class="formation-label">2着(複勝率)</span>
+            <span class="formation-nums">{second_str}</span>
+          </div>
+          <div class="leg-combos">{combo_str}</div>
         </div>""")
         race_range = f"{target_races[0]}〜{target_races[-1]}R"
         best_chain_str = "　⇒　".join(f"{f}→{s}" for f, s in best_chain)
+        budget_yen = total_combo_count * 100
         sections.append(f"""
         <section class="track-block" id="{track}">
           <h2 class="track-h">{track} <span class="range-badge">{race_range}</span></h2>
           <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">{best_chain_str}</span></p>
           <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 {total_combo_count} 通り
-            (各レースの厳選フォーメーションから1点ずつ選んで3連続的中を狙う。以前は最大3375通りでしたが、
-            自信度に応じて候補数を絞り込み、現実的な点数まで圧縮しています)</p>
+            (1点100円換算で目安 約{budget_yen:,}円。各レースの候補は単勝率・複勝率の実際の値を見て
+            選んでおり、僅差の馬は取りこぼさないよう複数頭残した上で、3レース合計が
+            大体1万円前後で買える点数になるよう調整しています)</p>
           <div class="legs-row">{''.join(legs_html)}</div>
         </section>""")
 
@@ -683,14 +739,12 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
   .leg-card{{background:rgba(255,255,255,0.05);border-radius:6px;padding:14px 16px;flex:1;min-width:220px;}}
   .leg-r{{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;
     display:flex;align-items:center;gap:8px;}}
-  .conf-badge{{font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;padding:1px 8px;border-radius:10px;}}
-  .conf-badge.conf-strong{{background:var(--gold);color:var(--ink);}}
-  .conf-badge.conf-mixed{{background:rgba(255,255,255,0.15);color:var(--paper-card);}}
-  .leg-formation{{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}}
-  .formation-label{{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);}}
-  .formation-nums{{font-family:'DM Mono',monospace;font-size:15px;color:var(--paper-card);font-weight:500;}}
-  .leg-formation .arrow{{color:var(--gold);}}
-  .leg-combos{{font-family:'DM Mono',monospace;font-size:10.5px;color:#a89f8c;line-height:1.6;}}
+  .pt-badge{{font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;padding:1px 8px;border-radius:10px;
+    background:var(--gold);color:var(--ink);}}
+  .leg-formation{{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:6px;}}
+  .formation-label{{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);flex-shrink:0;}}
+  .formation-nums{{font-family:'DM Mono',monospace;font-size:13.5px;color:var(--paper-card);font-weight:500;}}
+  .leg-combos{{font-family:'DM Mono',monospace;font-size:10.5px;color:#a89f8c;line-height:1.6;margin-top:6px;}}
   .empty{{text-align:center;padding:60px 20px;color:#a89f8c;}}
   .disclaimer{{font-size:11px;color:#a89f8c;text-align:center;padding:26px 20px 0;max-width:600px;margin:0 auto;}}
   @media (max-width: 480px){{
@@ -708,9 +762,10 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="wrap">
     <div class="eyebrow">South Kanto NAR AI · SPAT4</div>
     <h1>トリプル馬単</h1>
-    <p>各場の最終3レースの馬単を3連続的中させる企画。各レースの自信度(本命の抜け具合)に応じて
-      候補数を自動で絞り込み、1レースあたり最大3点・3レース合計でも最大27通り程度に収まる
-      現実的な点数のフォーメーションを提示します。まず「厳選1点」だけでも狙えます。</p>
+    <p>各場の最終3レースの馬単を3連続的中させる企画。1着候補は単勝率、2着候補は複勝率の
+      実際の値を見て、僅差の馬は取りこぼさないよう複数頭残しつつ、3レース合計が
+      大体1万円前後(1点100円換算)で買える点数に収まるよう自動調整します。
+      まず「厳選1点」だけでも狙えます。</p>
     <a class="back-link" href="index.html">← 本日の予想に戻る</a>
   </div>
 </div>
