@@ -64,4 +64,27 @@ jobs:
           git config user.email "bot@example.com"
           git add scraper/scraped_data/ docs/
           git diff --cached --quiet || git commit -m "オッズ更新: $(TZ=Asia/Tokyo date +%Y-%m-%d\ %H:%M)"
-          git push
+
+          # 10分おきに実行されるため、前回の実行がまだ終わっていなかったり、
+          # 毎日のスクレイピングと重なったりすると git push が
+          # "! [rejected] (fetch first)" で失敗することがある。
+          # その場合はリモートの変更を取り込んでリトライする(scraped_data・docs は
+          # 今回の実行結果を優先)。
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "push成功"
+              exit 0
+            fi
+            echo "push失敗(リモートが先に進んでいます)。取り込んでリトライします ($i/5)"
+            git fetch origin main
+            if git merge -X ours --no-edit origin/main; then
+              continue
+            else
+              echo "マージに失敗したため中断してリトライします"
+              git merge --abort || true
+              sleep $((RANDOM % 10 + 5))
+            fi
+          done
+
+          echo "5回リトライしてもpushできませんでした。次回の実行で改めて取り込まれます。"
+          exit 1
