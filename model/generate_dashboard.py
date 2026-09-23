@@ -538,19 +538,44 @@ def generate_dashboard(date_str: str) -> Path:
     return out_path
 
 
-def build_umatan_formation(df_race: pd.DataFrame) -> dict:
+def build_umatan_formation(df_race: pd.DataFrame, max_combos_per_leg: int = 3) -> dict:
     """1レース分の馬単フォーメーション(1着候補×2着候補)を組み立てる。
-    1着候補: 単勝率トップ3(本命・対抗・単穴)
-    2着候補: 複勝率トップ5(1着候補と重複する馬は除いてカウント)
-    → 最大3×5=15点程度(重複除外で実際は12〜15点)のフォーメーション。
+
+    従来は 1着候補3頭×2着候補5頭=最大15点 という固定フォーメーションで、
+    これを3レース掛け合わせるトリプル馬単では最大 15×15×15=3375通りにも
+    なってしまい、実際には現実的に買える点数を大きく超えていた。
+
+    ここではレースごとの「自信度」(1着候補の単勝率が2位以下をどれだけ
+    突き放しているか)に応じて候補数を動的に絞り込み、1レースあたりの
+    点数を max_combos_per_leg (デフォルト3点) に収める。
+    - 本命が単独で頭一つ抜けている(僅差でない)レース → 1着は1頭に固定し、
+      浮いた分だけ2着候補を広げる(最大3点)。
+    - 本命・対抗が拮抗している(僅差)レース → 1着候補を2頭に広げる代わりに
+      2着候補を絞る(最大2点)。
+    この結果、3レース合計でも最大 3×3×3=27通り、自信度が高いレースが
+    含まれる日は一桁〜十数通り程度まで圧縮され、現実的に購入できる
+    点数になる。
     """
-    df_sorted = df_race.sort_values("rank")
-    first_candidates = df_sorted.head(3)
+    df_sorted = df_race.sort_values("p_win", ascending=False)
+    p_win_top = float(df_sorted.iloc[0]["p_win"])
+    p_win_2nd = float(df_sorted.iloc[1]["p_win"]) if len(df_sorted) > 1 else 0.0
+
+    # 1位と2位の単勝率の差が小さい(僅差)場合のみ1着候補を2頭に広げる
+    CONFIDENCE_GAP = 0.08  # このポイント差以上あれば「本命堅め」とみなす
+    if len(df_sorted) > 1 and (p_win_top - p_win_2nd) < CONFIDENCE_GAP:
+        n_first = 2
+        confidence = "混戦"
+    else:
+        n_first = 1
+        confidence = "本命堅め"
+
+    first_candidates = df_sorted.head(n_first)
     first_umaban = first_candidates["馬番"].astype(int).tolist()
 
-    second_pool = df_race.sort_values("p_top3", ascending=False)
-    second_candidates = second_pool.head(6)
-    second_umaban = [u for u in second_candidates["馬番"].astype(int).tolist()][:5]
+    # 2着候補数 = 点数上限 ÷ 1着候補数(切り捨て、最低1頭は確保)
+    n_second = max(1, max_combos_per_leg // n_first)
+    second_pool = df_race[~df_race["馬番"].isin(first_umaban)].sort_values("p_top3", ascending=False)
+    second_umaban = second_pool.head(n_second)["馬番"].astype(int).tolist()
 
     combos = []
     for f in first_umaban:
@@ -562,6 +587,9 @@ def build_umatan_formation(df_race: pd.DataFrame) -> dict:
         "first": first_umaban,
         "second": second_umaban,
         "combos": combos,
+        "confidence": confidence,
+        # 最も自信度の高い1着×2着の組み合わせ(1点だけ買うならこれ)
+        "best_combo": combos[0] if combos else None,
     }
 
 
@@ -578,14 +606,18 @@ def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
         target_races = race_nums[-3:]
         legs_html = []
         total_combo_count = 1
+        best_chain = []
         for rn in target_races:
             df_race = df_track[df_track["race_num"] == rn]
             formation = build_umatan_formation(df_race)
             total_combo_count *= max(len(formation["combos"]), 1)
+            if formation["best_combo"]:
+                best_chain.append(formation["best_combo"])
             combo_str = "、".join(f"{f}→{s}" for f, s in formation["combos"])
+            conf_class = "conf-strong" if formation["confidence"] == "本命堅め" else "conf-mixed"
             legs_html.append(f"""
         <div class="leg-card">
-          <div class="leg-r">{rn}R</div>
+          <div class="leg-r">{rn}R <span class="conf-badge {conf_class}">{formation['confidence']}</span></div>
           <div class="leg-formation">
             <span class="formation-label">1着</span>
             <span class="formation-nums">{' '.join(str(x) for x in formation['first'])}</span>
@@ -596,11 +628,14 @@ def generate_triple_umatan_page(df: pd.DataFrame, date_str: str):
           <div class="leg-combos">{combo_str}({len(formation['combos'])}点)</div>
         </div>""")
         race_range = f"{target_races[0]}〜{target_races[-1]}R"
+        best_chain_str = "　⇒　".join(f"{f}→{s}" for f, s in best_chain)
         sections.append(f"""
         <section class="track-block" id="{track}">
           <h2 class="track-h">{track} <span class="range-badge">{race_range}</span></h2>
-          <p class="total-combo">3レース合計 {total_combo_count} 通り
-            (各レースの馬単フォーメーションから1点ずつ選んで3連続的中を狙う)</p>
+          <p class="best-pick">厳選1点(最小予算で狙うなら): <span class="best-pick-nums">{best_chain_str}</span></p>
+          <p class="total-combo">フォーメーション全通り買う場合: 3レース合計 {total_combo_count} 通り
+            (各レースの厳選フォーメーションから1点ずつ選んで3連続的中を狙う。以前は最大3375通りでしたが、
+            自信度に応じて候補数を絞り込み、現実的な点数まで圧縮しています)</p>
           <div class="legs-row">{''.join(legs_html)}</div>
         </section>""")
 
@@ -640,10 +675,17 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
     display:flex;align-items:baseline;gap:10px;}}
   .range-badge{{font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);border:1px solid var(--gold);
     border-radius:20px;padding:2px 10px;}}
-  .total-combo{{font-size:12px;color:#c9c2b0;margin-bottom:16px;}}
+  .total-combo{{font-size:12px;color:#c9c2b0;margin-bottom:16px;line-height:1.6;}}
+  .best-pick{{font-size:13px;color:var(--paper-card);background:rgba(169,131,47,0.15);
+    border:1px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:10px;}}
+  .best-pick-nums{{font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--gold);}}
   .legs-row{{display:flex;gap:14px;flex-wrap:wrap;}}
   .leg-card{{background:rgba(255,255,255,0.05);border-radius:6px;padding:14px 16px;flex:1;min-width:220px;}}
-  .leg-r{{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;}}
+  .leg-r{{font-family:'DM Mono',monospace;font-size:11px;color:#c9c2b0;margin-bottom:8px;
+    display:flex;align-items:center;gap:8px;}}
+  .conf-badge{{font-family:'Zen Kaku Gothic New',sans-serif;font-size:10px;padding:1px 8px;border-radius:10px;}}
+  .conf-badge.conf-strong{{background:var(--gold);color:var(--ink);}}
+  .conf-badge.conf-mixed{{background:rgba(255,255,255,0.15);color:var(--paper-card);}}
   .leg-formation{{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;}}
   .formation-label{{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--gold);}}
   .formation-nums{{font-family:'DM Mono',monospace;font-size:15px;color:var(--paper-card);font-weight:500;}}
@@ -666,8 +708,9 @@ TRIPLE_HTML_TEMPLATE = """<!DOCTYPE html>
   <div class="wrap">
     <div class="eyebrow">South Kanto NAR AI · SPAT4</div>
     <h1>トリプル馬単</h1>
-    <p>各場の最終3レースの馬単を3連続的中させる企画。1着候補(本命・対抗)×2着候補(複勝率上位)の
-      フォーメーションを、各レースごとに提示します。</p>
+    <p>各場の最終3レースの馬単を3連続的中させる企画。各レースの自信度(本命の抜け具合)に応じて
+      候補数を自動で絞り込み、1レースあたり最大3点・3レース合計でも最大27通り程度に収まる
+      現実的な点数のフォーメーションを提示します。まず「厳選1点」だけでも狙えます。</p>
     <a class="back-link" href="index.html">← 本日の予想に戻る</a>
   </div>
 </div>
