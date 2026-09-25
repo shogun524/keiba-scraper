@@ -171,6 +171,7 @@ BASE_CSS = """
 
   .dq-warning-banner{background:#fff4e0;border:1px solid #d9a441;border-left:4px solid #d9a441;
     border-radius:4px;padding:10px 14px;margin:10px 0;font-size:12.5px;color:#6b4c17;line-height:1.6;}
+  .dq-warning-banner.odds-pending{background:#eef3fa;border-color:#7a9cc6;border-left-color:#7a9cc6;color:#2f4a6e;}
   .dq-warn{color:#d9a441;font-size:11px;margin-left:3px;}
   .race-tile.dq-warn-tile{border-color:#d9a441;background:#fff8ec;}
 
@@ -304,6 +305,16 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
           ⚠ このレースは出馬表データ(性齢・斤量・過去走など)の取得が不十分だった可能性があります。
           予想の並び順が実際の実力差を反映していない(枠番・馬番順に近い)おそれがあるため、
           参考程度にとどめてください。
+        </div>"""
+    elif bool(head.get("odds_pending", False)):
+        # オッズ未発表(前日夜取得など)の場合、順位付け自体は機能しているが
+        # 複勝率などの確率の絶対値は精度が低い可能性がある。データ取得失敗とは
+        # 性質が違うため、警告よりも軽いトーンの案内にする。
+        dq_warning_html = """
+        <div class="dq-warning-banner odds-pending">
+          ℹ️ このレースはまだオッズが発表されていません。順位付け自体は有効ですが、
+          複勝率などの確率の絶対値は精度が低い可能性があります。締切間近の再取得で
+          オッズが反映されると自動的に更新されます。
         </div>"""
 
     rows_html = []
