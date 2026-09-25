@@ -169,6 +169,11 @@ BASE_CSS = """
     background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
+  .dq-warning-banner{background:#fff4e0;border:1px solid #d9a441;border-left:4px solid #d9a441;
+    border-radius:4px;padding:10px 14px;margin:10px 0;font-size:12.5px;color:#6b4c17;line-height:1.6;}
+  .dq-warn{color:#d9a441;font-size:11px;margin-left:3px;}
+  .race-tile.dq-warn-tile{border-color:#d9a441;background:#fff8ec;}
+
   .bar-cell{display:flex;align-items:center;gap:6px;}
   .bar-track{width:50px;height:5px;background:var(--paper-deep);border-radius:3px;overflow:hidden;flex-shrink:0;}
   .bar-fill{height:100%;background:var(--red);}
@@ -286,6 +291,21 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
     weather = fmt(head.get("weather"))
     baba = fmt(head.get("baba_condition"))
 
+    # data_quality_ok列が無い古い予想CSVとの互換のためdefault=True。
+    # 性齢・斤量・過去走情報の多くが未取得だった場合、特徴量がほぼ同一になり
+    # モデルの予想が事実上の同点(=枠番・馬番順にしか見えない結果)になっている
+    # おそれがあるため、その旨をレースページ上でも明示する。
+    dq_raw = head.get("data_quality_ok", True)
+    dq_ok = bool(dq_raw) if pd.notna(dq_raw) else True
+    dq_warning_html = ""
+    if not dq_ok:
+        dq_warning_html = """
+        <div class="dq-warning-banner">
+          ⚠ このレースは出馬表データ(性齢・斤量・過去走など)の取得が不十分だった可能性があります。
+          予想の並び順が実際の実力差を反映していない(枠番・馬番順に近い)おそれがあるため、
+          参考程度にとどめてください。
+        </div>"""
+
     rows_html = []
     for _, row in df_race.iterrows():
         rank = int(row["rank"])
@@ -354,6 +374,7 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
         <span><span class="race-title">{race_num}R</span><span class="race-name">{race_name}</span></span>
         <span class="rnum">race_id: {race_id}</span>
       </div>
+      {dq_warning_html}
       <div class="race-sub">
         <span>発走 {post_time}</span>
         <span>{grade}</span>
@@ -499,9 +520,13 @@ def generate_dashboard(date_str: str) -> Path:
             head = df_race.sort_values("rank").iloc[0]
             post_time = fmt(head.get("post_time"), "")
             honmei_name = fmt(head.get("horse_name"), "")
+            # data_quality_ok列が無い古い予想CSVとの互換のためdefault=True
+            dq_ok = bool(head.get("data_quality_ok", True)) if pd.notna(head.get("data_quality_ok", True)) else True
+            warn_badge = '<span class="dq-warn" title="出馬表データの取得が不十分な可能性があります">⚠</span>' if not dq_ok else ''
+            tile_class = "race-tile dq-warn-tile" if not dq_ok else "race-tile"
             tiles.append(f"""
-            <a class="race-tile" href="races/{track}_{rn}.html">
-              <span class="rn">{rn}R</span>
+            <a class="{tile_class}" href="races/{track}_{rn}.html">
+              <span class="rn">{rn}R{warn_badge}</span>
               <span class="rtime">{post_time}</span>
               <span class="rhonmei">◎{honmei_name}</span>
             </a>""")
