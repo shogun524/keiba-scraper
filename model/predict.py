@@ -129,7 +129,29 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
     # 脚質傾向: 直近5走の「初角-最終角」の平均(参考表示用。モデルの入力特徴量からは除外)。
     rf_corner_gain = [(h.get('recent_form') or {}).get('avg5_corner_gain') for h in horses]
     df['corner_gain'] = rf_corner_gain
-    df = df.sort_values('p_win', ascending=False).reset_index(drop=True)
+
+    # データ品質チェック: 性齢・斤量・過去走情報が取得できていない馬が多いと、
+    # 特徴量がほぼ全頭同一(NaN)になり、モデルの予想が事実上の同点になる。
+    # その場合 sort_values は同点を元の並び順(=解析順=通常は枠番・馬番順)のまま
+    # 返すため、"予想が枠番通りに並んでいるだけ"という結果になってしまう。
+    # これは特定の競馬場のページ形式にパーサーが対応できていない時に起きるため、
+    # 検知してログに出し、ダッシュボード側にも警告として伝える。
+    n = len(df)
+    static_missing = int((df['sei'].isna() | df['kinryo'].isna()).sum())
+    recent_form_missing = int(df['n_past_races'].isna().sum())
+    static_missing_ratio = static_missing / n if n else 0
+    recent_form_missing_ratio = recent_form_missing / n if n else 0
+    data_quality_ok = static_missing_ratio < 0.3
+    if static_missing_ratio >= 0.3 or recent_form_missing_ratio >= 0.8:
+        print(f"⚠️  データ品質警告: {race_id} ({track}) で性齢/斤量が未取得の馬 "
+              f"{static_missing}/{n}頭、過去走情報が未取得の馬 {recent_form_missing}/{n}頭。"
+              f"パーサーがこの場のページ形式に対応できていない可能性があります。"
+              f"予想の信頼性が低い状態です。")
+    df['data_quality_ok'] = data_quality_ok
+
+    # kind='stable' を明示: 同点(=データ欠損で特徴量が同一)になった場合でも
+    # 挙動を一定にする(quicksortは同点の並び順を保証しないため)。
+    df = df.sort_values('p_win', ascending=False, kind='stable').reset_index(drop=True)
     df['rank'] = df.index + 1
     # 複勝率だけで見た順位(単勝順位=rankとは別に、一目で紐候補の強さが分かるように)
     df['top3_rank'] = df['p_top3'].rank(ascending=False, method='min').astype(int)
@@ -137,7 +159,7 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
     cols = ['rank', 'top3_rank', 'race_id', '馬番', 'waku', 'horse_name', 'sei', 'rei', 'kinryo', 'jockey',
             'odds', 'ninki', 'p_win', 'p_top3', 'corner_gain',
             'avg5_ninki', 'avg5_margin', 'avg5_last3f', 'days_since_last',
-            'n_past_races', 'same_track_as_last']
+            'n_past_races', 'same_track_as_last', 'data_quality_ok']
     return df[cols], race_meta
 
 
@@ -180,6 +202,12 @@ def main(input_path: str):
         print(f"{top['race_id']} [{top['post_time']}発走 {top['race_name']}]: "
               f"1位予想 {top['馬番']}番 {top['horse_name']} "
               f"(単勝{top['p_win']*100:.1f}% / 複勝{top['p_top3']*100:.1f}%)")
+
+    bad = all_pred.loc[~all_pred['data_quality_ok'], ['race_id', 'track', 'race_num']].drop_duplicates()
+    if not bad.empty:
+        bad_tracks = sorted(bad['track'].unique())
+        print(f"\n⚠️  データ品質警告のあったレース: {len(bad)}件(場: {', '.join(bad_tracks)})。"
+              f"上記の個別警告を確認してください。パーサーがそのページ形式に対応できていない可能性があります。")
 
 
 if __name__ == '__main__':
