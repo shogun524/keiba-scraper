@@ -149,6 +149,20 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
               f"予想の信頼性が低い状態です。")
     df['data_quality_ok'] = data_quality_ok
 
+    # オッズ未発表チェック: レース前日など、まだオッズが発表されていない時間帯に
+    # 取得すると ninki(当該レースの人気)が全頭で取得できない。この状態でも
+    # 1着候補の順位付け自体は他の特徴量(過去走成績など)で機能するが、
+    # このモデルはオッズを重要な特徴量として学習しているため、複勝率などの
+    # 確率の絶対値は割り引いて見る必要がある(締切間近の再取得でオッズが
+    # 取得できれば自動的に更新される)。データ品質警告とは別に、軽い注意書きとして扱う。
+    odds_missing_ratio = df['ninki'].isna().sum() / n if n else 0
+    odds_pending = odds_missing_ratio >= 0.8
+    if odds_pending:
+        print(f"ℹ️  {race_id} ({track}) はオッズ未発表です。順位付けは有効ですが、"
+              f"複勝率などの確率の絶対値は精度が低い可能性があります。"
+              f"締切間近の再取得で自動的に更新されます。")
+    df['odds_pending'] = odds_pending
+
     # kind='stable' を明示: 同点(=データ欠損で特徴量が同一)になった場合でも
     # 挙動を一定にする(quicksortは同点の並び順を保証しないため)。
     df = df.sort_values('p_win', ascending=False, kind='stable').reset_index(drop=True)
@@ -159,7 +173,7 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
     cols = ['rank', 'top3_rank', 'race_id', '馬番', 'waku', 'horse_name', 'sei', 'rei', 'kinryo', 'jockey',
             'odds', 'ninki', 'p_win', 'p_top3', 'corner_gain',
             'avg5_ninki', 'avg5_margin', 'avg5_last3f', 'days_since_last',
-            'n_past_races', 'same_track_as_last', 'data_quality_ok']
+            'n_past_races', 'same_track_as_last', 'data_quality_ok', 'odds_pending']
     return df[cols], race_meta
 
 
