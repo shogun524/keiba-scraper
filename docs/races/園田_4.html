@@ -65,6 +65,12 @@
     background:var(--red);border-radius:2px;padding:2px 7px;margin-left:5px;letter-spacing:0.05em;white-space:nowrap;}
   .pick-badge.taikou{background:var(--gold);}
 
+  .dq-warning-banner{background:#fff4e0;border:1px solid #d9a441;border-left:4px solid #d9a441;
+    border-radius:4px;padding:10px 14px;margin:10px 0;font-size:12.5px;color:#6b4c17;line-height:1.6;}
+  .dq-warning-banner.odds-pending{background:#eef3fa;border-color:#7a9cc6;border-left-color:#7a9cc6;color:#2f4a6e;}
+  .dq-warn{color:#d9a441;font-size:11px;margin-left:3px;}
+  .race-tile.dq-warn-tile{border-color:#d9a441;background:#fff8ec;}
+
   .bar-cell{display:flex;align-items:center;gap:6px;}
   .bar-track{width:50px;height:5px;background:var(--paper-deep);border-radius:3px;overflow:hidden;flex-shrink:0;}
   .bar-fill{height:100%;background:var(--red);}
@@ -163,6 +169,12 @@
         <span><span class="race-title">4R</span><span class="race-name">C1二</span></span>
         <span class="rnum">race_id: 202650092504</span>
       </div>
+      
+        <div class="dq-warning-banner odds-pending">
+          ℹ️ このレースはまだオッズが発表されていません。順位付け自体は有効ですが、
+          複勝率などの確率の絶対値は精度が低い可能性があります。締切間近の再取得で
+          オッズが反映されると自動的に更新されます。
+        </div>
       <div class="race-sub">
         <span>発走 15:50</span>
         <span>C一</span>
@@ -175,54 +187,34 @@
         <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
         <tbody>
         <tr class="honmei">
-          <td>1</td>
-          <td><span class="umaban">1</span></td>
-          <td>ワンノブアス<span class="pick-badge">本命</span></td>
-          <td>牡5 / 56.0kg</td>
-          <td>小谷哲</td>
-          <td class="odds-cell">直近10.0人気 / 上3F平均39.6秒 / 休養1週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="pct">44.0%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">1位</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="pct">72.1%</span></div></td>
+          <td>7</td>
+          <td><span class="umaban">7</span></td>
+          <td>リケアマキアート<span class="pick-badge">本命</span></td>
+          <td>セ4 / 57.0kg</td>
+          <td>山本咲</td>
+          <td class="odds-cell">直近3.6人気 / 上3F平均39.9秒 / 休養3週 (5走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="pct">13.5%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">6位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
         </tr>
         <tr class="taikou">
-          <td>2</td>
-          <td><span class="umaban">2</span></td>
-          <td>ヴォメロ<span class="pick-badge taikou">対抗</span></td>
-          <td>牝3 / 55.0kg</td>
-          <td>竹村達</td>
-          <td class="odds-cell">直近7.8人気 / 上3F平均38.9秒 / 休養2週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:62%"></div></div><span class="pct">20.6%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">2位</span><div class="bar-track"><div class="bar-fill" style="width:66%"></div></div><span class="pct">65.6%</span></div></td>
-        </tr>
-        <tr class="">
-          <td>3</td>
-          <td><span class="umaban">3</span></td>
-          <td>オーロヴェント</td>
-          <td>牡3 / 56.0kg</td>
-          <td>永井孝</td>
-          <td class="odds-cell">直近5.8人気 / 上3F平均39.8秒 / 休養15週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><span class="pct">12.7%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">3位</span><div class="bar-track"><div class="bar-fill" style="width:44%"></div></div><span class="pct">44.4%</span></div></td>
-        </tr>
-        <tr class="">
           <td>4</td>
           <td><span class="umaban">4</span></td>
-          <td>アイファーアイドル</td>
+          <td>アイファーアイドル<span class="pick-badge taikou">対抗</span></td>
           <td>牡3 / 56.0kg</td>
           <td>小牧太</td>
           <td class="odds-cell">直近8.0人気 / 上3F平均37.4秒 / 休養3週 (4走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:23%"></div></div><span class="pct">7.8%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">4位</span><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">36.7%</span></div></td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="pct">13.2%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">1位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.2%</span></div></td>
         </tr>
         <tr class="">
-          <td>5</td>
-          <td><span class="umaban">5</span></td>
-          <td>グランサントル</td>
-          <td>牡4 / 57.0kg</td>
-          <td>杉浦健</td>
-          <td class="odds-cell">直近2.0人気 / 上3F平均39.4秒 / 休養2週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">5.7%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">5位</span><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><span class="pct">26.9%</span></div></td>
+          <td>1</td>
+          <td><span class="umaban">1</span></td>
+          <td>ワンノブアス</td>
+          <td>牡5 / 56.0kg</td>
+          <td>小谷哲</td>
+          <td class="odds-cell">直近10.0人気 / 上3F平均39.6秒 / 休養1週 (5走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div><span class="pct">12.7%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">5位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
         </tr>
         <tr class="">
           <td>6</td>
@@ -231,18 +223,8 @@
           <td>牝5 / 55.0kg</td>
           <td>田野豊</td>
           <td class="odds-cell">直近3.2人気 / 上3F平均40.0秒 / 休養1週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><span class="pct">4.3%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">6位</span><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div><span class="pct">21.5%</span></div></td>
-        </tr>
-        <tr class="">
-          <td>7</td>
-          <td><span class="umaban">7</span></td>
-          <td>リケアマキアート</td>
-          <td>セ4 / 57.0kg</td>
-          <td>山本咲</td>
-          <td class="odds-cell">直近3.6人気 / 上3F平均39.9秒 / 休養3週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><span class="pct">2.9%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">7位</span><div class="bar-track"><div class="bar-fill" style="width:17%"></div></div><span class="pct">17.2%</span></div></td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">12.3%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">3位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
         </tr>
         <tr class="">
           <td>8</td>
@@ -251,8 +233,38 @@
           <td>牡3 / 56.0kg</td>
           <td>下原理</td>
           <td class="odds-cell">直近3.2人気 / 上3F平均40.6秒 / 休養3週 (5走分)</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:6%"></div></div><span class="pct">2.1%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">8位</span><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pct">11.5%</span></div></td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">12.3%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">7位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>5</td>
+          <td><span class="umaban">5</span></td>
+          <td>グランサントル</td>
+          <td>牡4 / 57.0kg</td>
+          <td>杉浦健</td>
+          <td class="odds-cell">直近2.0人気 / 上3F平均39.4秒 / 休養2週 (5走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:37%"></div></div><span class="pct">12.2%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">8位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>3</td>
+          <td><span class="umaban">3</span></td>
+          <td>オーロヴェント</td>
+          <td>牡3 / 56.0kg</td>
+          <td>永井孝</td>
+          <td class="odds-cell">直近5.8人気 / 上3F平均39.8秒 / 休養15週 (5走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:36%"></div></div><span class="pct">12.0%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">4位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.1%</span></div></td>
+        </tr>
+        <tr class="">
+          <td>2</td>
+          <td><span class="umaban">2</span></td>
+          <td>ヴォメロ</td>
+          <td>牝3 / 55.0kg</td>
+          <td>竹村達</td>
+          <td class="odds-cell">直近7.8人気 / 上3F平均38.9秒 / 休養2週 (5走分)</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div><span class="pct">11.8%</span></div></td>
+          <td><div class="bar-cell"><span class="top3-rank">2位</span><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><span class="pct">0.2%</span></div></td>
         </tr></tbody>
       </table>
       
@@ -260,30 +272,30 @@
         <div class="himo-label">紐候補(複勝率順・脚質)</div>
         <div class="himo-chip-row">
         <span class="himo-chip ">
+          <span class="umaban">4</span>
+          <span class="style-tag">平均的 (+0.0)</span>
+        </span>
+        <span class="himo-chip ">
           <span class="umaban">2</span>
           <span class="style-tag">平均的 (+0.2)</span>
+        </span>
+        <span class="himo-chip ">
+          <span class="umaban">6</span>
+          <span class="style-tag">平均的 (-0.6)</span>
         </span>
         <span class="himo-chip sashi">
           <span class="umaban">3</span>
           <span class="style-tag">差し込み型 (+5.4)</span>
         </span>
         <span class="himo-chip ">
-          <span class="umaban">4</span>
+          <span class="umaban">1</span>
           <span class="style-tag">平均的 (+0.0)</span>
-        </span>
-        <span class="himo-chip ">
-          <span class="umaban">5</span>
-          <span class="style-tag">平均的 (+0.4)</span>
-        </span>
-        <span class="himo-chip ">
-          <span class="umaban">6</span>
-          <span class="style-tag">平均的 (-0.6)</span>
         </span></div>
       </div>
       
       <div class="bet-block">
         <div class="bet-label">買い目案(馬単1着流し・3点)</div>
-        <div class="bet-line">1<span class="arrow">→</span>2, 3, 4</div>
+        <div class="bet-line">7<span class="arrow">→</span>4, 2, 6</div>
       </div>
     </div>
 </div>
