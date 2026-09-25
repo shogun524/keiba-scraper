@@ -106,8 +106,16 @@ def parse_horse_static(block: list[str]) -> dict:
                 continue
         odds_m = re.match(r'^([\d.]+)\s*\((\d+)人気\)$', line)
         if odds_m:
-            result['odds'] = float(odds_m.group(1))
-            result['ninki'] = int(odds_m.group(2))
+            odds_val = float(odds_m.group(1))
+            # オッズがまだ発表されていない(前日夜など)時間帯にスクレイピングすると、
+            # netkeibaは各馬のオッズを "0.0" にし、人気は単に馬番(プログラム)順の
+            # 連番(1人気,2人気,3人気...)を仮表示する。これをそのまま"人気"として
+            # 使うと、実際の市場評価と無関係に「馬番通りの順位」を特徴量に
+            # 入れてしまい、予想が枠番・馬番順になる原因になる。
+            # そのためオッズ0.0(=未発表)の場合は odds/ninki を取得しない。
+            if odds_val > 0:
+                result['odds'] = odds_val
+                result['ninki'] = int(odds_m.group(2))
             continue
         sac_m = re.match(r'^(牡|牝|セ)(\d+)(\S+)$', line)
         if sac_m:
