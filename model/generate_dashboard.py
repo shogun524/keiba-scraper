@@ -450,7 +450,7 @@ HOME_TEMPLATE = """<!DOCTYPE html>
 {content}
 </div>
 
-<footer>keiba_ai (南関東版) · model_early_urawa · 毎朝GitHub Actionsで自動更新</footer>
+<footer>keiba_ai (地方競馬11場版) · model_nar11v2 (実オッズ特徴量対応) · 毎朝GitHub Actionsで自動更新</footer>
 
 </body>
 </html>
@@ -489,7 +489,7 @@ RACE_PAGE_TEMPLATE = """<!DOCTYPE html>
 {content}
 </div>
 
-<footer>keiba_ai (南関東版) · model_early_urawa</footer>
+<footer>keiba_ai (地方競馬11場版) · model_nar11v2 (実オッズ特徴量対応)</footer>
 
 </body>
 </html>
