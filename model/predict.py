@@ -23,18 +23,52 @@ MODEL_DIR = Path(__file__).parent
 # 2026年8月改訂版: オッズ(現在レースの人気)を特徴量に追加し、career_*系(通算成績)は
 # shutuba_past.htmlでは取得できないため除外。distance/surface/grade/corner系も同様の理由で除外
 # (2025年1月〜2026年7月の実データ + 実際の払戻金でROI検証済み)。
+#
+# 2026年9月 v2改訂: 「人気」(=順位)に加えて odds_prob(レース内で正規化した
+# 単勝の理論確率 1/オッズ)を追加。旧モデルは順位しか見ておらず、順位だけだと
+# 「1着馬は平均してこのくらいの勝率」という集団統計に引っ張られ、レースごとの
+# 確率にほとんど差が出なかった(常に1位予想≒40%、2位≒20%、3位≒10%前後)。
+# 実際のオッズを特徴量に入れると、レースごとに本当に意味のある差が出る
+# ことを学習データで確認済み(1位予想の勝率の標準偏差が約0.06→約0.15に、
+# AUCも0.829→0.848に改善)。特徴量の並び順はモデル学習時と完全に一致させる
+# 必要がある(LightGBMは列名ではなく位置でマッチするため)。学習時の並び:
+#   ['齢','kinryo','days_since_last','last_ninki','avg5_ninki','last_margin',
+#    'avg5_margin','avg5_last3f','n_past_races','same_track_as_last','人気',
+#    'odds_prob','競馬場','性']
+#
+# 【重要】odds_prob はあまりに情報量が大きいため、モデルはほぼ odds_prob
+# だけで木を分岐するようになっている。そのため、まだオッズが発表されて
+# いないレース(odds_prob・人気が両方欠損)にこのモデルをそのまま使うと、
+# 出走馬全頭の予測値が事実上の完全同点になってしまう(実データで確認済み)。
+# これは「人気」しか使っていなかった旧モデルより悪化する退行のため、
+# オッズ未発表時専用に「人気」「odds_prob」を使わないフォールバックモデル
+# (model_nar11v2_fallback_*)を別途用意し、predict_race() 内でレースごとに
+# オッズの有無を見て自動的に切り替える。
 FEATURE_COLS_NUMERIC = [
     '齢', '斤量', 'days_since_last', 'last_ninki', 'avg5_ninki', 'last_margin',
     'avg5_margin', 'avg5_last3f', 'n_past_races', 'same_track_as_last', 'ninki',
+    'odds_prob',
 ]
 FEATURE_COLS_CATEGORICAL = ['場所', '性']
 ALL_FEATURES = FEATURE_COLS_NUMERIC + FEATURE_COLS_CATEGORICAL
 
+# オッズ未発表時のフォールバック特徴量(人気・odds_probを除いた並び。
+# model_nar11v2_fallback_* の学習時の並びと一致させる必要がある)。
+FEATURE_COLS_NUMERIC_FALLBACK = [
+    '齢', '斤量', 'days_since_last', 'last_ninki', 'avg5_ninki', 'last_margin',
+    'avg5_margin', 'avg5_last3f', 'n_past_races', 'same_track_as_last',
+]
+ALL_FEATURES_FALLBACK = FEATURE_COLS_NUMERIC_FALLBACK + FEATURE_COLS_CATEGORICAL
+
 
 def load_models():
-    win_model = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11_is_win.txt"))
-    top3_model = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11_is_top3.txt"))
-    return win_model, top3_model
+    """通常モデル(win, top3)とオッズ未発表時用フォールバックモデル
+    (win_fallback, top3_fallback)の計4つを返す。"""
+    win_model = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11v2_is_win.txt"))
+    top3_model = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11v2_is_top3.txt"))
+    win_fallback = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11v2_fallback_is_win.txt"))
+    top3_fallback = lgb.Booster(model_file=str(MODEL_DIR / "model_nar11v2_fallback_is_top3.txt"))
+    return win_model, top3_model, win_fallback, top3_fallback
 
 
 def guess_race_meta(raw_text: str, track: str) -> dict:
@@ -97,7 +131,8 @@ def horse_to_feature_row(horse: dict, race: dict) -> dict:
     }
 
 
-def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model) -> tuple:
+def predict_race(race_id: str, track: str, raw_text: str,
+                  win_model, top3_model, win_fallback, top3_fallback) -> tuple:
     horses = parse_race_card(raw_text)
     if not horses:
         return pd.DataFrame(), {}
@@ -107,20 +142,49 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
 
     rows = [horse_to_feature_row(h, race_meta) for h in horses]
     df = pd.DataFrame(rows)
+    n = len(df)
+
+    # odds_prob: レース内で正規化した単勝の理論確率 (1/オッズ)。
+    # オッズ未発表(0.0扱い)の馬は shutuba_past_parser 側で odds=None に
+    # なっているため、ここでは自然にNaNとなり sum() にも加算されない
+    # (=そのレースは全馬 odds_prob=NaN となる)。
+    odds_raw = pd.Series([h.get('odds') for h in horses], dtype='float64')
+    implied_raw = 1.0 / odds_raw.where(odds_raw > 0)
+    implied_sum = implied_raw.sum()
+    if implied_sum and implied_sum > 0:
+        df['odds_prob'] = implied_raw / implied_sum
+    else:
+        df['odds_prob'] = float('nan')
+
+    # オッズ未発表チェック: レース前日など、まだオッズが発表されていない時間帯に
+    # 取得すると ninki(当該レースの人気)・odds_prob が全頭で取得できない。
+    # この場合 v2 通常モデルは odds_prob への依存度が極端に高いため、
+    # 予測値が全頭ほぼ同点になってしまう(旧モデルより悪化する)。
+    # そのため「人気」「odds_prob」を使わないフォールバックモデルに切り替える。
+    odds_missing_ratio = df['ninki'].isna().sum() / n if n else 0
+    odds_pending = odds_missing_ratio >= 0.8
+    if odds_pending:
+        print(f"ℹ️  {race_id} ({track}) はオッズ未発表です。過去走成績ベースの"
+              f"フォールバックモデルで予想します(オッズ取得後、締切間近の再取得で"
+              f"自動的に通常モデルへ更新されます)。")
+        use_win, use_top3, use_features = win_fallback, top3_fallback, ALL_FEATURES_FALLBACK
+    else:
+        use_win, use_top3, use_features = win_model, top3_model, ALL_FEATURES
+
     for c in FEATURE_COLS_CATEGORICAL:
         df[c] = df[c].astype('category')
     for c in [f for f in ALL_FEATURES if f not in FEATURE_COLS_CATEGORICAL]:
         df[c] = pd.to_numeric(df[c], errors='coerce')
 
-    df['p_win_raw'] = win_model.predict(df[ALL_FEATURES])
-    df['p_top3_raw'] = top3_model.predict(df[ALL_FEATURES])
+    df['p_win_raw'] = use_win.predict(df[use_features])
+    df['p_top3_raw'] = use_top3.predict(df[use_features])
     df['p_win'] = df['p_win_raw'] / df['p_win_raw'].sum()
     df['p_top3'] = df['p_top3_raw']
 
     df['horse_name'] = [h.get('name') for h in horses]
     df['馬番'] = [h.get('umaban') for h in horses]
     df['waku'] = [h.get('waku') for h in horses]
-    df['odds'] = [h.get('odds') for h in horses]
+    df['odds'] = odds_raw
     df['sei'] = [h.get('sei') for h in horses]
     df['rei'] = [h.get('rei') for h in horses]
     df['kinryo'] = [h.get('kinryo') for h in horses]
@@ -136,7 +200,6 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
     # 返すため、"予想が枠番通りに並んでいるだけ"という結果になってしまう。
     # これは特定の競馬場のページ形式にパーサーが対応できていない時に起きるため、
     # 検知してログに出し、ダッシュボード側にも警告として伝える。
-    n = len(df)
     static_missing = int((df['sei'].isna() | df['kinryo'].isna()).sum())
     recent_form_missing = int(df['n_past_races'].isna().sum())
     static_missing_ratio = static_missing / n if n else 0
@@ -149,18 +212,8 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
               f"予想の信頼性が低い状態です。")
     df['data_quality_ok'] = data_quality_ok
 
-    # オッズ未発表チェック: レース前日など、まだオッズが発表されていない時間帯に
-    # 取得すると ninki(当該レースの人気)が全頭で取得できない。この状態でも
-    # 1着候補の順位付け自体は他の特徴量(過去走成績など)で機能するが、
-    # このモデルはオッズを重要な特徴量として学習しているため、複勝率などの
-    # 確率の絶対値は割り引いて見る必要がある(締切間近の再取得でオッズが
-    # 取得できれば自動的に更新される)。データ品質警告とは別に、軽い注意書きとして扱う。
-    odds_missing_ratio = df['ninki'].isna().sum() / n if n else 0
-    odds_pending = odds_missing_ratio >= 0.8
-    if odds_pending:
-        print(f"ℹ️  {race_id} ({track}) はオッズ未発表です。順位付けは有効ですが、"
-              f"複勝率などの確率の絶対値は精度が低い可能性があります。"
-              f"締切間近の再取得で自動的に更新されます。")
+    # odds_pending は上でモデル選択のために既に計算済み(オッズ未発表チェック)。
+    # ダッシュボード側の注意書き表示にも使うため、列として残しておく。
     df['odds_pending'] = odds_pending
 
     # kind='stable' を明示: 同点(=データ欠損で特徴量が同一)になった場合でも
@@ -178,7 +231,7 @@ def predict_race(race_id: str, track: str, raw_text: str, win_model, top3_model)
 
 
 def main(input_path: str):
-    win_model, top3_model = load_models()
+    win_model, top3_model, win_fallback, top3_fallback = load_models()
 
     results = []
     race_meta_all = []
@@ -188,7 +241,7 @@ def main(input_path: str):
                 continue
             record = json.loads(line)
             pred, race_meta = predict_race(record['race_id'], record['track'], record['raw_text'],
-                                            win_model, top3_model)
+                                            win_model, top3_model, win_fallback, top3_fallback)
             if not pred.empty:
                 pred['date'] = record['date']
                 pred['track'] = record['track']
