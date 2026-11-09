@@ -235,11 +235,13 @@ def main(input_path: str):
 
     results = []
     race_meta_all = []
+    records = []
     with open(input_path, encoding='utf-8') as f:
         for line in f:
             if not line.strip():
                 continue
             record = json.loads(line)
+            records.append(record)
             pred, race_meta = predict_race(record['race_id'], record['track'], record['raw_text'],
                                             win_model, top3_model, win_fallback, top3_fallback)
             if not pred.empty:
@@ -258,6 +260,35 @@ def main(input_path: str):
     if not results:
         print('予想できたレースがありませんでした。')
         return
+
+    # v3モデル(過去の結果から作る実力評価。オッズ・人気は使わない)があれば、1着率・3着内率をそれで置き換える。
+    # 旧モデルの値は p_win_v2 / p_top3_v2 として残す(比較用)。v3が使えないときは旧モデルのまま。
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'pipeline'))
+        import nar_predict_v3
+        v3 = nar_predict_v3.predict(records)
+    except Exception as e:  # v3で失敗しても予想は出す
+        print(f'v3モデルでの予想に失敗したため旧モデルを使います: {e}')
+        v3 = None
+    if v3:
+        replaced = 0
+        for i, pred in enumerate(results):
+            rid = str(pred['race_id'].iloc[0])
+            if rid not in v3:
+                pred['model_version'] = 'v2'
+                continue
+            m = v3[rid].set_index('umaban')
+            pred['p_win_v2'], pred['p_top3_v2'] = pred['p_win'], pred['p_top3']
+            um = pd.to_numeric(pred['馬番'], errors='coerce')
+            pred['p_win'] = um.map(m['p_ai_win']).fillna(0.0)
+            pred['p_top3'] = um.map(m['p_ai_top3']).fillna(0.0)
+            pred['model_version'] = 'v3'
+            pred = pred.sort_values('p_win', ascending=False, kind='stable').reset_index(drop=True)
+            pred['rank'] = pred.index + 1
+            pred['top3_rank'] = pred['p_top3'].rank(ascending=False, method='min').astype(int)
+            results[i] = pred
+            replaced += 1
+        print(f'v3モデルで {replaced}/{len(results)} レースを予想しました')
 
     all_pred = pd.concat(results, ignore_index=True)
     out_path = Path(input_path).with_name(Path(input_path).stem + '_predictions.csv')

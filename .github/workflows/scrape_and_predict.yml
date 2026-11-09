@@ -24,7 +24,7 @@ jobs:
 
       - name: 依存パッケージインストール
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements.txt duckdb scipy
           playwright install --with-deps chromium
 
       - name: スクレイピング実行
@@ -35,6 +35,23 @@ jobs:
             DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
           fi
           python scraper_netkeiba.py --date "$DATE"
+
+      # v3モデル用の過去の結果(リリース nar-data)。毎晩更新されるので日付をキーにキャッシュする
+      - name: 日付キー
+        id: day
+        run: echo "d=$(TZ=Asia/Tokyo date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: narcache
+        with:
+          path: data/nar_results.csv
+          key: nar-results-${{ steps.day.outputs.d }}
+      - name: 過去の結果を取得
+        if: steps.narcache.outputs.cache-hit != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data
+          gh release download nar-data --pattern nar_results.csv --dir data --clobber || echo "過去の結果がまだ無いので旧モデルで予想します"
 
       - name: 予想実行
         working-directory: model

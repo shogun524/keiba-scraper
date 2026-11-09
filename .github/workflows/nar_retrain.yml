@@ -1,0 +1,52 @@
+name: 地方競馬AI v3 再学習
+
+# 過去の結果(リリース nar-data)から特徴量を作り直し、ウォークフォワード検証 → 本番モデルの学習 → main に保存。
+# 検証用の予測(nar_wf_preds.parquet)はリリース nar-data に置き、買い方の検証(strategy_search)に使う。
+on:
+  schedule:
+    - cron: "37 20 * * 2"   # JST 水曜 05:37
+  workflow_dispatch: {}
+
+concurrency:
+  group: nar-retrain
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install duckdb lightgbm pandas numpy scipy pyarrow
+      - name: データ取得
+        run: |
+          mkdir -p data
+          gh release download nar-data --pattern nar_results.csv --dir data --clobber
+          gh release download nar-data --pattern nar_payouts.csv --dir data --clobber
+      - name: 特徴量作成
+        run: python pipeline/nar_features.py data/nar_results.csv data/nar_features.parquet
+      - name: 学習・検証
+        run: |
+          python pipeline/nar_train.py data/nar_features.parquet --payouts data/nar_payouts.csv \
+            --test-years 2024 2025 2026 --wf-out data/nar_wf_preds.parquet | tee train_log.txt
+          { echo '```'; grep -v Warning train_log.txt | tail -40; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: 検証用の予測を保存
+        run: gh release upload nar-data data/nar_wf_preds.parquet --clobber
+      - name: モデルを main に保存
+        run: |
+          git config user.name "keiba-ai-bot"
+          git config user.email "bot@example.com"
+          git add model/model_nar_v3_win.txt model/model_nar_v3_top3.txt model/ev_calibration.json \
+                  model/v3_backtest.json model/v3_features.json
+          git diff --cached --quiet && exit 0
+          git commit -q -m "v3モデル再学習 $(TZ='Asia/Tokyo' date '+%Y-%m-%d %H:%M')"
+          for i in 1 2 3 4 5; do git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 10; done
+          exit 1

@@ -104,6 +104,11 @@ def parse_horse_static(block: list[str]) -> dict:
                 result['running_style'] = rs_style_only.group(1)
                 result['weeks_since_last'] = int(weeks_m.group(1))
                 continue
+        # 調教師(例: "岩手・櫻田康二")。v3モデルの調教師成績に使う
+        tr_m = re.match(r'^(\S{1,4})・(\S+)$', line)
+        if tr_m and 'trainer' not in result and 'sei' not in result:
+            result['trainer'] = line.replace('\xa0', '').strip()
+            continue
         odds_m = re.match(r'^([\d.]+)\s*\((\d+)人気\)$', line)
         if odds_m:
             odds_val = float(odds_m.group(1))
