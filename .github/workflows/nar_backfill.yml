@@ -123,6 +123,20 @@ jobs:
           # 範囲ファイルを消した場合はリリースからも消す
           if [ ! -f data/nar_range.txt ]; then gh release delete-asset nar-data nar_range.txt -y 2>/dev/null || true; fi
 
+      # 予想と確定結果を突き合わせて「予測の成績」ページを更新(docs/ は main から GitHub Pages で公開)
+      - name: 予測の成績ページを更新
+        if: always() && steps.range.outputs.skip == 'false'
+        run: |
+          pip install numpy >/dev/null
+          python pipeline/performance.py scraper/scraped_data data docs/performance.html
+          git config user.name "keiba-ai-bot"
+          git config user.email "bot@example.com"
+          git add docs/performance.html
+          git diff --cached --quiet && exit 0
+          git commit -q -m "予測の成績を更新 $(TZ='Asia/Tokyo' date '+%Y-%m-%d %H:%M')"
+          for i in 1 2 3 4 5; do git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 10; done
+          exit 1
+
       - name: 続きを自動で再実行
         if: steps.fetch.outputs.code == '3'
         env:

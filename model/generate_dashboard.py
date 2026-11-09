@@ -442,6 +442,7 @@ HOME_TEMPLATE = """<!DOCTYPE html>
     <div class="top-links">
       <a href="triple.html">トリプル馬単 →</a>
       <a href="courses.html">コース特徴 →</a>
+      <a href="performance.html">予測の成績 →</a>
     </div>
   </div>
 </div>
