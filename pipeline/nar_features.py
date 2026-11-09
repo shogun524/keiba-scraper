@@ -25,17 +25,21 @@ TRAINER_KEY = "left(regexp_replace(regexp_replace(coalesce({c}, ''), '" + AFFIL 
 STD_UNTIL = "2023-01-01"  # タイム指数の基準タイムはこの日より前のデータだけで作る(評価期間へのリーク防止)
 
 
+# 列の値にカンマを含むレース名があるので、引用符を明示する(自動判定だと失敗する)
+CSV_OPTS = "all_varchar=true, header=true, delim=',', quote='\"', escape='\"'"
+
+
 def build(con, results_csv: str):
     """results_csv に is_entry 列(1=これから走る今日の出走馬)があれば、その馬も同じ式で特徴量を作る
     (学習と予測で計算方法を完全に一致させるため)"""
-    cols = [r[0] for r in con.execute(f"DESCRIBE SELECT * FROM read_csv_auto('{results_csv}', all_varchar=true, header=true)").fetchall()]
+    cols = [r[0] for r in con.execute(f"DESCRIBE SELECT * FROM read_csv('{results_csv}', {CSV_OPTS})").fetchall()]
     entry = "coalesce(is_entry, '0')" if "is_entry" in cols else "'0'"
     con.execute(f"""
     CREATE OR REPLACE TABLE raw AS
     SELECT * FROM (
         SELECT *, {entry} AS entry_flag,
                row_number() OVER (PARTITION BY race_id, umaban ORDER BY {entry} DESC, race_date) AS rn
-        FROM read_csv_auto('{results_csv}', all_varchar=true, header=true)
+        FROM read_csv('{results_csv}', {CSV_OPTS})
     ) WHERE rn = 1 AND race_date IS NOT NULL AND umaban IS NOT NULL
     """)
     con.execute(f"""
