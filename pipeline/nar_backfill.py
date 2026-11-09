@@ -43,6 +43,11 @@ RESULT_COLUMNS = [
 ]
 ZERO_TRIES_LIMIT = 3
 FAIL_STREAK_LIMIT = 30
+NO_RESULT_LIMIT = 2  # ページは開けたのに結果表が無いレース(中止など)は、別々の実行で2回そうなら諦める
+
+
+class NoResult(Exception):
+    """ページは取れたが確定した結果が無い(中止・未確定)。アクセス失敗とは区別する"""
 
 
 def http_get(url, referer="https://nar.netkeiba.com/", timeout=20):
@@ -73,7 +78,7 @@ def fetch_race(rid: str):
     html = http_get(RESULT_URL.format(rid=rid))
     rows = parse_race_result(html, rid)
     if not rows or not any(_to_int(r.get("着順")) == 1 for r in rows):
-        raise ValueError("結果が確定していない/結果表なし")
+        raise NoResult("結果が確定していない/結果表なし(中止の可能性)")
     meta = parse_nar_meta(html, rid)
     out = []
     for r in rows:
@@ -117,6 +122,8 @@ def main():
     prog_path = os.path.join(a.out_dir, "nar_progress.json")
     dates_path = os.path.join(a.out_dir, "nar_dates_done.json")
     zero_path = os.path.join(a.out_dir, "nar_zero_tries.json")
+    noresult_path = os.path.join(a.out_dir, "nar_noresult.json")
+    noresult = _load(noresult_path, {})
     done = set(_load(prog_path, []))
     dates_done = set(_load(dates_path, []))
     zero_tries = _load(zero_path, {})
@@ -157,6 +164,16 @@ def main():
                     stats["streak"] = 0
                 time.sleep(random.uniform(0.3, 0.8))
                 return True
+            except NoResult as e:
+                with lock:
+                    noresult[rid] = noresult.get(rid, 0) + 1
+                    if noresult[rid] >= NO_RESULT_LIMIT:
+                        done.add(rid)  # 中止レースとみなして以後は取りに行かない
+                        print(f"  [{rid}] 結果なしが{NO_RESULT_LIMIT}回 → 中止レースとして飛ばします", flush=True)
+                    else:
+                        print(f"  [{rid}] {e}", flush=True)
+                time.sleep(random.uniform(0.3, 0.8))
+                return False
             except Exception as e:
                 if attempt == 2:
                     with lock:
@@ -200,6 +217,7 @@ def main():
             if todo:
                 list(ex.map(work, todo))
             _save(prog_path, sorted(done))
+            _save(noresult_path, noresult)
             if all(r in done for r in ids):
                 dates_done.add(d)
                 _save(dates_path, sorted(dates_done))
@@ -211,6 +229,7 @@ def main():
     fp.close()
     _save(prog_path, sorted(done))
     _save(dates_path, sorted(dates_done))
+    _save(noresult_path, noresult)
     if stats["err"]:
         finished = False
     print(f"{'完了' if finished else '途中終了'}。成功={stats['ok']} 失敗={stats['err']}", flush=True)

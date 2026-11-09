@@ -40,7 +40,7 @@ permissions:
 env:
   GH_TOKEN: ${{ github.token }}
   MAX_ROUNDS: "12"
-  FILES: "nar_results.csv nar_payouts.csv nar_progress.json nar_dates_done.json nar_zero_tries.json nar_range.txt"
+  FILES: "nar_results.csv nar_payouts.csv nar_progress.json nar_dates_done.json nar_zero_tries.json nar_noresult.json nar_range.txt"
 
 jobs:
   backfill:
