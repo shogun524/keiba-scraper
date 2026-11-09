@@ -1,0 +1,44 @@
+name: nar.netkeiba 取得の診断
+
+# 過去結果のバックフィル・オッズ記録を作る前に、nar.netkeiba の実際のページ・APIの形を記録する。
+# 結果はリリース diagnostics の diag.zip に保存される。
+on:
+  workflow_dispatch:
+    inputs:
+      dates:
+        description: "レース一覧を調べる日付(YYYYMMDD、空白区切り)"
+        default: "20231115 20261109"
+      results:
+        description: "結果ページを調べるレースID"
+        default: "202344111511 202655110901"
+      odds:
+        description: "オッズページを調べるレースID(発売中のレース)"
+        default: "202645110912"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install playwright
+          playwright install --with-deps chromium
+      - name: 診断
+        run: |
+          python tools/diagnose_nar.py --dates ${{ github.event.inputs.dates }} --results ${{ github.event.inputs.results }} --odds ${{ github.event.inputs.odds }} --out diag
+          { echo '```'; cat diag/summary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: 保存
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          zip -qr diag.zip diag || true
+          gh release view diagnostics >/dev/null 2>&1 || gh release create diagnostics --prerelease --title "診断結果(自動)" --notes "diagnose_nar.yml の出力"
+          gh release upload diagnostics diag.zip --clobber
