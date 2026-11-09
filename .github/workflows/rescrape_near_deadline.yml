@@ -5,7 +5,7 @@ on:
     # 10分おき、レース開催時間帯のみ(12:00〜22:00 JST = 03:00〜13:00 UTC)
     # GitHub Actionsのcronは指定時刻ちょうどに実行される保証はなく、
     # 特に毎時00分は他リポジトリのジョブと重なり数分遅延することがある。
-    - cron: "*/10 3-12 * * *"
+    - cron: "*/10 1-12 * * *"   # 10:00〜21:59 JST(昼開催の門別・盛岡なども対象)
   workflow_dispatch:
     inputs:
       date:
@@ -16,6 +16,9 @@ on:
         description: "発走何分前までを対象にするか"
         required: false
         default: "10"
+
+permissions:
+  contents: write
 
 jobs:
   rescrape-near-deadline:
@@ -57,6 +60,25 @@ jobs:
             python predict.py --input "$JSONL"
             python generate_dashboard.py --date "$DATE"
           fi
+
+      # 発走120分前からのレースの単勝・馬連・ワイドのオッズを記録し(リリース nar-odds に日ごとのファイル)、
+      # その時点のEVを docs/ev_log に保存する。失敗しても予想の更新は続ける
+      - name: オッズの記録・EV
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE="${{ github.event.inputs.date }}"
+          [ -z "$DATE" ] && DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+          pip install beautifulsoup4 lxml >/dev/null
+          mkdir -p docs/odds_history
+          gh release view nar-odds >/dev/null 2>&1 || gh release create nar-odds --title "地方競馬オッズ履歴(自動)" --notes "締切前10分おきのオッズ(単勝・馬連・ワイド)"
+          gh release download nar-odds --pattern "odds_${DATE}.csv" --dir docs/odds_history --clobber 2>/dev/null || true
+          python pipeline/nar_odds_snapshot.py --date "$DATE" --window-min 120 || [ $? -eq 2 ]
+          if [ -f "docs/odds_history/odds_${DATE}.csv" ]; then
+            gh release upload nar-odds "docs/odds_history/odds_${DATE}.csv" --clobber
+          fi
+          cd model && python generate_dashboard.py --date "$DATE"
 
       - name: 結果をコミット
         run: |

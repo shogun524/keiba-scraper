@@ -279,6 +279,78 @@ def fmt(val, default="―"):
     return str(val)
 
 
+# ---- EVボード(pipeline/nar_odds_snapshot.py が締切前に記録した docs/ev_log/ev_<日付>.csv を表示) ----
+EV_DF = pd.DataFrame()
+EV_NOTE = ("確率 = AIの1着率と単勝オッズの市場確率の混合(係数は過去の結果から推定)、馬連・ワイドは2・3着の補正付きHarville法。"
+           "EV = 確率 × 今のオッズ(ワイドは下限)。地方は馬連・ワイドの売上が小さく、オッズが単勝と大きくずれることがあるため、"
+           "EV 2以上は「オッズが薄いだけ」の可能性も高い。表示したEV≧1.0の買い目は成績ページで実際の払戻で採点する。")
+
+
+def load_ev(date_str: str):
+    global EV_DF
+    p = DOCS_DIR / "ev_log" / f"ev_{date_str}.csv"
+    EV_DF = pd.read_csv(p, dtype={"race_id": str, "combo": str}) if p.exists() else pd.DataFrame()
+
+
+def _ev_odds(r):
+    if r["bet"] == "ワイド" and pd.notna(r.get("odds_high")):
+        return f'{r["odds"]:.1f}〜{r["odds_high"]:.1f}'
+    return f'{r["odds"]:.1f}'
+
+
+def _ev_badge(ev):
+    color = "#2E7D46" if ev >= 1.0 else ("#B8862B" if ev >= 0.9 else "#9A9A9A")
+    warn = " ⚠" if ev >= 2.0 else ""
+    return f'<span style="color:{color};font-weight:700;">EV {ev:.2f}{warn}</span>'
+
+
+def build_ev_block(race_id: str) -> str:
+    if EV_DF.empty:
+        return ""
+    e = EV_DF[EV_DF["race_id"] == str(race_id)]
+    if e.empty:
+        return ""
+    cols = []
+    for bet in ("単勝", "馬連", "ワイド"):
+        t = e[e["bet"] == bet].sort_values("ev", ascending=False).head(3)
+        if t.empty:
+            continue
+        items = ""
+        for _, r in t.iterrows():
+            mv = ""
+            if bet == "単勝" and pd.notna(r.get("move")) and abs(r["move"]) >= 0.1:
+                mv = (f' <span style="color:{"#B0433A" if r["move"] > 0 else "#1E5FA8"};font-size:11px;">'
+                      f'{r["odds_first"]:.1f}→{r["odds"]:.1f}{"↓買われ" if r["move"] > 0 else "↑売られ"}</span>')
+            items += f'<li><b>{r["combo"]}</b> {_ev_odds(r)}倍 ・ {r["p"] * 100:.1f}% ・ {_ev_badge(r["ev"])}{mv}</li>'
+        cols.append(f'<div><div style="font-size:11px;color:var(--ink-dim);">{bet}</div><ul style="margin:2px 0 0;padding-left:16px;font-size:12px;line-height:1.8;">{items}</ul></div>')
+    ts = e["ts"].iloc[0] if "ts" in e.columns else ""
+    return (f'<div style="margin-top:14px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper-card);">'
+            f'<div style="font-weight:700;font-size:13px;">EVボード <span style="font-weight:400;font-size:11px;color:var(--ink-dim);">({ts} 時点)</span></div>'
+            f'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">{"".join(cols)}</div></div>')
+
+
+def build_ev_summary(df: pd.DataFrame) -> str:
+    if EV_DF.empty:
+        return ""
+    meta = df.assign(race_id=df["race_id"].astype(str)).groupby("race_id").agg(
+        track=("track", "first"), rn=("race_num", "first"), pt=("post_time", "first"))
+    top = EV_DF[EV_DF["ev"] >= 1.0].sort_values("ev", ascending=False).head(15)
+    label = "EV 1.0以上の買い目"
+    if top.empty:
+        top = EV_DF.sort_values("ev", ascending=False).head(10)
+        label = "EV 1.0以上はなし。EVが高い順"
+    lis = ""
+    for _, r in top.iterrows():
+        if r["race_id"] not in meta.index:
+            continue
+        m = meta.loc[r["race_id"]]
+        lis += (f'<li><a href="races/{m.track}_{int(m.rn)}.html">{m.track}{int(m.rn)}R</a> {m.pt} ・ '
+                f'<b>{r["bet"]} {r["combo"]}</b> {_ev_odds(r)}倍 ・ {r["p"] * 100:.1f}% ・ {_ev_badge(r["ev"])}</li>')
+    return (f'<section class="track-block"><div class="track-block-head"><h2>EVボード</h2>'
+            f'<span style="font-size:11px;color:var(--ink-dim);">{label}(締切前に10分おき更新)</span></div>'
+            f'<p class="track-note-mini">{EV_NOTE}</p><ul style="font-size:12.5px;line-height:1.9;padding-left:18px;">{lis}</ul></section>')
+
+
 def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> str:
     df_race = df_race.sort_values("rank")
     head = df_race.iloc[0]
@@ -398,6 +470,7 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
         <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
         <tbody>{''.join(rows_html)}</tbody>
       </table>
+      {build_ev_block(race_id)}
       {himo_block}
       {bet_block}
     </div>"""
@@ -515,8 +588,9 @@ def generate_dashboard(date_str: str) -> Path:
 
     df = pd.read_csv(pred_path)
     tracks = sorted(df["track"].unique())
+    load_ev(date_str)
 
-    home_sections = []
+    home_sections = [build_ev_summary(df)]
     for track in tracks:
         df_track = df[df["track"] == track]
         race_nums = sorted(df_track["race_num"].unique())

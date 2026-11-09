@@ -175,6 +175,38 @@ def table(head, rows, cls=""):
     return f'<div class="tbl-wrap"><table class="{cls}"><thead><tr>{th}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
 
 
+def ev_section() -> str:
+    """EVボードで EV≧1.0 と表示した買い目(発走前に最後に記録した値)を、実際の払戻で採点する"""
+    ev_dir = os.path.join(os.path.dirname(os.path.abspath(OUT_HTML)), "ev_log")
+    pay_path = os.path.join(DATA_DIR, "nar_payouts.csv")
+    files = sorted(glob.glob(os.path.join(ev_dir, "ev_*.csv")))
+    if not files or not os.path.exists(pay_path):
+        return ('<section class="card"><h2>EVボード(EV≧1.0)の実績</h2><p class="lead">オッズの記録が始まったばかりで、'
+                'まだ採点できる結果がありません。</p></section>')
+    pay = pd.read_csv(pay_path, dtype={"race_id": str, "combo": str})
+    paid = set(pay["race_id"])
+    pmap = pay.groupby(["race_id", "bet_type", "combo"])["payout"].sum().to_dict()
+    ev = pd.concat([pd.read_csv(f, dtype={"race_id": str, "combo": str}) for f in files], ignore_index=True)
+    ev = ev[(ev["ev"] >= 1.0) & ev["race_id"].isin(paid)].copy()
+    if ev.empty:
+        return ('<section class="card"><h2>EVボード(EV≧1.0)の実績</h2><p class="lead">'
+                'まだ採点できる結果がありません。</p></section>')
+    ev["ret"] = [pmap.get((r, b, c), 0) for r, b, c in zip(ev["race_id"], ev["bet"], ev["combo"])]
+    ev["band"] = pd.cut(ev["ev"], [1.0, 1.2, 1.5, 2.0, 1e9], labels=["1.0〜1.2", "1.2〜1.5", "1.5〜2.0", "2.0以上"], right=False)
+    rows = []
+    for (bet, band), g in ev.groupby(["bet", "band"], observed=True):
+        roi = g["ret"].sum() / (len(g) * 100)
+        rows.append(f"<tr><td>{bet}</td><td>{band}</td><td class='num'>{len(g)}</td><td class='num'>{int((g.ret > 0).sum())}</td>{roi_cell(roi)}</tr>")
+    tot = ev["ret"].sum() / (len(ev) * 100)
+    return f"""
+    <section class="card">
+      <h2>EVボード(EV≧1.0)の実績</h2>
+      <p class="lead">EVボードで「EV 1.0以上」と表示した単勝・馬連・ワイドを、発走前に最後に記録した時点の値で各100円買ったとして採点。
+      全体 {len(ev)}点・回収率 {tot * 100:.1f}%。EVが高すぎる帯(2.0以上)が本当に儲かるのか、オッズが薄いだけなのかをここで見極める。</p>
+      {table(["券種", "EV帯", "点数", "的中", "回収率"], rows)}
+    </section>"""
+
+
 def model_type_section(df: pd.DataFrame) -> str:
     """予想に使われたモデル(オッズ入りの通常 / オッズ未発表時のフォールバック)ごとの◎の成績"""
     rows = []
@@ -196,7 +228,7 @@ def model_type_section(df: pd.DataFrame) -> str:
 def build_html(df: pd.DataFrame) -> str:
     now = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M")
     if df.empty:
-        body = '<section class="card"><p>まだ結果と照合できたレースがありません。開催日の夕方に結果を取得すると、ここに成績が表示されます。</p></section>'
+        body = ev_section() + '<section class="card"><p>まだ結果と照合できたレースがありません。開催日の夕方に結果を取得すると、ここに成績が表示されます。</p></section>'
         return page(body, now, "")
 
     n_races = df["race_id"].nunique()
@@ -330,7 +362,7 @@ def build_html(df: pd.DataFrame) -> str:
       {grouped("track_name", "競馬場")}
     </section>"""
 
-    body = kpis + model_type_section(df) + vs_market + calib + pop_tbl + ev_tbl + by_group
+    body = kpis + ev_section() + model_type_section(df) + vs_market + calib + pop_tbl + ev_tbl + by_group
     return page(body, now, period)
 
 
