@@ -115,6 +115,7 @@ def main():
     ap.add_argument("--out-dir", default="data")
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--max-minutes", type=float, default=None)
+    ap.add_argument("--redo-dates", default="", help="取り直す日(YYYYMMDD をカンマ区切り)。進捗から消してから取得する")
     a = ap.parse_args()
     os.makedirs(a.out_dir, exist_ok=True)
     res_path = os.path.join(a.out_dir, "nar_results.csv")
@@ -127,6 +128,14 @@ def main():
     done = set(_load(prog_path, []))
     dates_done = set(_load(dates_path, []))
     zero_tries = _load(zero_path, {})
+    for rd in [x.strip().replace("-", "") for x in a.redo_dates.split(",") if x.strip()]:
+        hit = lambda r: r[:4] == rd[:4] and r[6:10] == rd[4:8]  # noqa: E731  race_id は 年4桁+場2桁+月日4桁+R2桁
+        n0 = len(done)
+        done = {r for r in done if not hit(r)}
+        noresult = {k: v for k, v in noresult.items() if not hit(k)}
+        dates_done.discard(rd)
+        zero_tries.pop(rd, None)
+        print(f"{rd} を取り直します(進捗から {n0 - len(done)} レースを外しました)", flush=True)
 
     new_res = not os.path.exists(res_path)
     new_pay = not os.path.exists(pay_path)
@@ -141,12 +150,19 @@ def main():
     lock = threading.Lock()
     t0 = time.time()
     stats = {"ok": 0, "err": 0, "streak": 0}
+    rid_date = {}
     finished = True
     stop = False
 
     d0, d1 = date.fromisoformat(a.start), date.fromisoformat(a.end)
     dates = [(d0 + timedelta(days=i)).strftime("%Y%m%d") for i in range((d1 - d0).days + 1)]
     print(f"期間 {a.start}〜{a.end}({len(dates)}日)、処理済み {len(dates_done)}日・{len(done)}レース", flush=True)
+
+    jst_now = datetime.utcnow() + timedelta(hours=9)
+    today = jst_now.strftime("%Y%m%d")
+    # 当日分は全レースが終わる 22:30 JST 以降だけ取る(それより前だと「結果なし」が中止と区別できない)
+    if jst_now.hour * 60 + jst_now.minute < 22 * 60 + 30:
+        dates = [d for d in dates if d < today]
 
     def work(rid):
         for attempt in range(3):
@@ -166,8 +182,10 @@ def main():
                 return True
             except NoResult as e:
                 with lock:
-                    noresult[rid] = noresult.get(rid, 0) + 1
-                    if noresult[rid] >= NO_RESULT_LIMIT:
+                    # 当日のレースは未確定なだけかもしれないので数えない
+                    if rid_date.get(rid, today) < today:
+                        noresult[rid] = noresult.get(rid, 0) + 1
+                    if noresult.get(rid, 0) >= NO_RESULT_LIMIT:
                         done.add(rid)  # 中止レースとみなして以後は取りに行かない
                         print(f"  [{rid}] 結果なしが{NO_RESULT_LIMIT}回 → 中止レースとして飛ばします", flush=True)
                     else:
@@ -213,6 +231,8 @@ def main():
                 else:
                     finished = False
                 continue
+            for r in ids:
+                rid_date[r] = d
             todo = [r for r in ids if r not in done]
             if todo:
                 list(ex.map(work, todo))

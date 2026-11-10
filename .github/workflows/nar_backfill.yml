@@ -2,7 +2,7 @@ name: 地方競馬 過去結果+払戻の取得
 
 # nar.netkeiba の結果ページから、結果表・払戻表を取得してリリース nar-data に貯める。
 # 【初回】Run workflow で start=2022-01-01(end は空欄=今日)。1回5時間で区切り、終わるまで自分を再実行する。
-# 【毎日】23:23 JST に、データの最終日の翌日〜今日の分を取り足す(その日の結果も入る → 成績ページ・再学習に使う)。
+# 【毎日】23:23 JST に、データの最終日の翌日〜今日の分を取り足す(22:30 JST より前の実行では当日分は取らない)(その日の結果も入る → 成績ページ・再学習に使う)。
 on:
   schedule:
     - cron: "23 14 * * *"   # JST 23:23
@@ -24,6 +24,10 @@ on:
         description: "1回の実行で取得に使う最大時間(分)"
         required: false
         default: "300"
+      redo_dates:
+        description: "取り直す日(YYYY-MM-DD をカンマ区切り)。空欄=なし"
+        required: false
+        default: ""
       round:
         description: "自動再実行の回数(内部用)"
         required: false
@@ -100,10 +104,11 @@ jobs:
         env:
           W: ${{ github.event.inputs.workers || '3' }}
           M: ${{ github.event.inputs.max_minutes || '300' }}
+          REDO: ${{ github.event.inputs.redo_dates }}
         run: |
           set +e
           python pipeline/nar_backfill.py "${{ steps.range.outputs.start }}" "${{ steps.range.outputs.end }}" \
-            --out-dir data --workers "$W" --max-minutes "$M"
+            --out-dir data --workers "$W" --max-minutes "$M" --redo-dates "$REDO"
           code=$?
           set -e
           echo "code=$code" >> "$GITHUB_OUTPUT"
@@ -128,13 +133,20 @@ jobs:
         if: always() && steps.range.outputs.skip == 'false'
         run: |
           pip install numpy >/dev/null
-          python pipeline/performance.py scraper/scraped_data data docs/performance.html
+          python pipeline/performance.py scraper/scraped_data data /tmp/performance.html
           git config user.name "keiba-ai-bot"
           git config user.email "bot@example.com"
-          git add docs/performance.html
-          git diff --cached --quiet && exit 0
-          git commit -q -m "予測の成績を更新 $(TZ='Asia/Tokyo' date '+%Y-%m-%d %H:%M')"
-          for i in 1 2 3 4 5; do git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 10; done
+          # 他のワークフローも main に書き込むので、毎回最新の main に載せ直してから push する(競合しない)
+          for i in 1 2 3 4 5; do
+            git fetch -q origin "${GITHUB_REF_NAME}"
+            git reset -q --hard "origin/${GITHUB_REF_NAME}"
+            cp /tmp/performance.html docs/performance.html
+            git add docs/performance.html
+            git diff --cached --quiet && exit 0
+            git commit -q -m "予測の成績を更新 $(TZ='Asia/Tokyo' date '+%Y-%m-%d %H:%M')"
+            git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 10
+          done
           exit 1
 
       - name: 続きを自動で再実行
