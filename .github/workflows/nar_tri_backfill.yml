@@ -1,0 +1,42 @@
+name: 地方競馬 過去の3連単オッズの取得
+# 過去レースの3連単の最終オッズ(人気上位300組)をリリース nar-tri に貯める。1回 約5時間20分、終わるまで6時間おきに続ける。
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      minutes: { description: "取得する分数", default: "315" }
+permissions:
+  contents: write
+concurrency:
+  group: nar-tri
+  cancel-in-progress: false
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q pandas requests
+      - name: これまでの分を戻す
+        run: |
+          mkdir -p data
+          gh release download nar-data --pattern nar_results.csv --dir data --clobber
+          if gh release view nar-tri >/dev/null 2>&1; then
+            for f in nar_tri_odds.csv.gz nar_tri_done.json nar_tri_left.txt; do gh release download nar-tri --pattern "$f" --dir data --clobber || true; done
+          else
+            gh release create nar-tri --prerelease --title "地方 3連単オッズ(過去分)" --notes "nar_tri_backfill.py の出力"
+          fi
+          if [ "$(cat data/nar_tri_left.txt 2>/dev/null)" = "0" ]; then echo "取り終えています"; echo "DONE=1" >> "$GITHUB_ENV"; fi
+      - name: 取得
+        if: env.DONE != '1'
+        run: python pipeline/nar_tri_backfill.py data/nar_results.csv data --since 2025-01-01 --minutes ${{ github.event.inputs.minutes || '315' }}
+      - name: 保存
+        if: always() && env.DONE != '1'
+        run: |
+          for f in data/nar_tri_odds.csv.gz data/nar_tri_done.json data/nar_tri_left.txt; do [ -f "$f" ] && gh release upload nar-tri "$f" --clobber; done
+          echo "残り $(cat data/nar_tri_left.txt 2>/dev/null) レース" >> "$GITHUB_STEP_SUMMARY"
