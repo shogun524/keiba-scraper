@@ -83,7 +83,8 @@ def main():
     odds_p = os.path.join(a.out, "nar_tri_odds.csv.gz")
     done = json.load(open(done_p)) if os.path.exists(done_p) else {}
     r = pd.read_csv(a.results_csv, usecols=["race_id", "race_date"], dtype=str).drop_duplicates("race_id")
-    todo = sorted(set(r.loc[r.race_date >= a.since, "race_id"]) - set(done), reverse=True)   # 新しいレースから
+    # 新しいレースから。0組だったレースは1回だけ取り直す(-1 = 取り直しても無かった)
+    todo = sorted({x for x in r.loc[r.race_date >= a.since, "race_id"] if done.get(x, 0) == 0}, reverse=True)
     print(f"[INFO] 対象 {len(todo)}レース(取り終え {len(done)})", flush=True)
     S = requests.Session()
     S.headers.update({"User-Agent": UA, "Accept-Language": "ja"})
@@ -100,14 +101,14 @@ def main():
                 continue
             for c, o, nk in rows:
                 f.write(f"{rid},{c},{o},{nk}\n")
-            done[rid] = len(rows)
+            done[rid] = len(rows) if rows else (-1 if rid in done else 0)
             n_ok += bool(rows)
             if i % 200 == 0:
                 f.flush()
                 json.dump(done, open(done_p, "w"))
                 print(f"  {i}/{len(todo)} レース(オッズあり {n_ok})", flush=True)
     json.dump(done, open(done_p, "w"))
-    left = len(todo) - sum(1 for x in todo if x in done)
+    left = sum(1 for x in todo if done.get(x, 0) == 0 and x not in done)
     print(f"[INFO] 今回 {n_ok}レース分を取得。残り {left}レース", flush=True)
     open(os.path.join(a.out, "nar_tri_left.txt"), "w").write(str(left))
 
