@@ -33,10 +33,11 @@ jobs:
           fi
           if [ "$(cat data/nar_tri_left.txt 2>/dev/null)" = "0" ]; then echo "取り終えています"; echo "DONE=1" >> "$GITHUB_ENV"; fi
       - name: 取得
+        env: { TRI_OUT: data }
         if: env.DONE != '1'
         run: python pipeline/nar_tri_backfill.py data/nar_results.csv data --since 2025-01-01 --minutes ${{ github.event.inputs.minutes || '315' }}
       - name: 保存
         if: always() && env.DONE != '1'
         run: |
-          for f in data/nar_tri_odds.csv.gz data/nar_tri_done.json data/nar_tri_left.txt; do [ -f "$f" ] && gh release upload nar-tri "$f" --clobber; done
+          for f in data/nar_tri_odds.csv.gz data/nar_tri_done.json data/nar_tri_left.txt data/raw_sample.html; do [ -f "$f" ] && gh release upload nar-tri "$f" --clobber; done
           echo "残り $(cat data/nar_tri_left.txt 2>/dev/null) レース" >> "$GITHUB_STEP_SUMMARY"
