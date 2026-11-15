@@ -6,5 +6,6 @@ jobs:
     steps:
       - run: |
           set +e
-          curl -sL "https://cdnv2.netkeiba.com/img.nar/common/js/race/odds_ranking.js?20210203" -o r.js
-          grep -n -A25 "view_3odds_ranking" r.js | head -60
+          for j in odds_ninki odds_tanfuku odds_form_waku odds_form odds_common odds_ranking; do curl -sL "https://cdnv2.netkeiba.com/img.nar/common/js/race/$j.js" -o $j.js; done
+          curl -sL -A "Mozilla/5.0" "https://nar.netkeiba.com/odds/index.html?type=b8&race_id=202630111001&housiki=c99" -o p.html
+          grep -n -A20 "function view_3odds_ranking\|view_3odds_ranking *=" *.js p.html | head -80
