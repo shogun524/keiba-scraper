@@ -1,0 +1,62 @@
+{
+  "2024": {
+    "races": 13654,
+    "logloss_ai": 1.7586,
+    "logloss_market": 1.5542,
+    "logloss_blend": 1.5529,
+    "blend_a": 0.026,
+    "blend_b": 1.039,
+    "honmei_win": 0.375,
+    "fav_win": 0.444,
+    "honmei_is_fav": 0.625,
+    "honmei_tan_roi": 0.771,
+    "fav_tan_roi": 0.793,
+    "honmei_fuku_roi": 0.861,
+    "fav_fuku_roi": 0.888
+  },
+  "2025": {
+    "races": 13400,
+    "logloss_ai": 1.7532,
+    "logloss_market": 1.5541,
+    "logloss_blend": 1.5531,
+    "blend_a": 0.021,
+    "blend_b": 1.036,
+    "honmei_win": 0.382,
+    "fav_win": 0.449,
+    "honmei_is_fav": 0.646,
+    "honmei_tan_roi": 0.788,
+    "fav_tan_roi": 0.8,
+    "honmei_fuku_roi": 0.867,
+    "fav_fuku_roi": 0.895
+  },
+  "2026": {
+    "races": 11661,
+    "logloss_ai": 1.7303,
+    "logloss_market": 1.5322,
+    "logloss_blend": 1.5308,
+    "blend_a": 0.041,
+    "blend_b": 1.03,
+    "honmei_win": 0.399,
+    "fav_win": 0.459,
+    "honmei_is_fav": 0.658,
+    "honmei_tan_roi": 0.798,
+    "fav_tan_roi": 0.805,
+    "honmei_fuku_roi": 0.861,
+    "fav_fuku_roi": 0.887
+  },
+  "全期間": {
+    "races": 38715,
+    "logloss_ai": 1.7482,
+    "logloss_market": 1.5476,
+    "logloss_blend": 1.5463,
+    "blend_a": 0.028,
+    "blend_b": 1.035,
+    "honmei_win": 0.385,
+    "fav_win": 0.45,
+    "honmei_is_fav": 0.642,
+    "honmei_tan_roi": 0.785,
+    "fav_tan_roi": 0.799,
+    "honmei_fuku_roi": 0.863,
+    "fav_fuku_roi": 0.89
+  }
+}

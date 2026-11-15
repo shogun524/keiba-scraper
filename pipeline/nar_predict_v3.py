@@ -23,6 +23,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "scraper"))
 from nar_features import CATEGORICAL, FEATURES, build  # noqa: E402
 from shutuba_past_parser import parse_race_card  # noqa: E402
+from nar_market_model import FEATS as MM_FEATS  # noqa: E402  込%モデルが使う要素(予想CSVに mf_ 付きで残す)
 
 MODEL_WIN = os.path.join(ROOT, "model", "model_nar_v3_win.txt")
 MODEL_TOP3 = os.path.join(ROOT, "model", "model_nar_v3_top3.txt")
@@ -97,5 +98,5 @@ def predict(records: list[dict], results_csv: str = DEFAULT_RESULTS):
         g = g.copy()
         g["p_ai_win"] = g["pw"] / g["pw"].sum()
         g["p_ai_top3"] = np.clip(g["pt"] / g["pt"].sum() * min(3, len(g)), 0, 1)
-        out[str(rid)] = g[["umaban", "p_ai_win", "p_ai_top3", "h_starts"]]
+        out[str(rid)] = g[["umaban", "p_ai_win", "p_ai_top3", "h_starts"] + [c for c in MM_FEATS if c not in ("h_starts", "umaban")]]
     return out

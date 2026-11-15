@@ -137,8 +137,9 @@ def build(con, results_csv: str):
     for who in ("jockey", "trainer"):
         con.execute(f"""
         CREATE OR REPLACE TABLE {who}_day AS
-        SELECT {who}_key AS k, race_date, count(*) AS rides, sum(y_win) AS wins, sum(y_top3) AS top3
-        FROM r3 WHERE {who}_key <> '' AND finish IS NOT NULL GROUP BY 1, 2
+        SELECT {who}_key AS k, race_date, count(finish) AS rides,
+            sum(CASE WHEN finish IS NOT NULL THEN y_win END) AS wins, sum(CASE WHEN finish IS NOT NULL THEN y_top3 END) AS top3
+        FROM r3 WHERE {who}_key <> '' GROUP BY 1, 2   -- 出走予定の日(着順なし)も行を作る: 予測時に「前日までの365日」を結合できるように
         """)
         con.execute(f"""
         CREATE OR REPLACE TABLE {who}_roll AS

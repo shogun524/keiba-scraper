@@ -283,6 +283,9 @@ def main(input_path: str):
             pred['p_win'] = um.map(m['p_ai_win']).fillna(0.0)
             pred['p_top3'] = um.map(m['p_ai_top3']).fillna(0.0)
             pred['model_version'] = 'v3'
+            # 込%(オッズ込みの1着率)用の要素。ダッシュボードが最新オッズで込%を計算し直すときにも使う
+            for c in [c for c in m.columns if c not in ('p_ai_win', 'p_ai_top3')]:
+                pred['mf_' + c] = um.map(m[c])
             pred = pred.sort_values('p_win', ascending=False, kind='stable').reset_index(drop=True)
             pred['rank'] = pred.index + 1
             pred['top3_rank'] = pred['p_top3'].rank(ascending=False, method='min').astype(int)
@@ -291,6 +294,11 @@ def main(input_path: str):
         print(f'v3モデルで {replaced}/{len(results)} レースを予想しました')
 
     all_pred = pd.concat(results, ignore_index=True)
+    try:
+        import nar_extras
+        all_pred = nar_extras.add_mm(all_pred)
+    except Exception as e:  # 込%が出せなくても予想は出す
+        print(f'込%の計算に失敗: {e}')
     out_path = Path(input_path).with_name(Path(input_path).stem + '_predictions.csv')
     all_pred.to_csv(out_path, index=False, encoding='utf-8-sig')
     print(f'保存: {out_path} ({len(results)}レース分)')

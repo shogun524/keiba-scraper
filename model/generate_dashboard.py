@@ -8,7 +8,12 @@ import argparse
 import datetime
 from pathlib import Path
 
+import sys
+
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "pipeline"))
+import nar_extras  # noqa: E402
 
 SCRAPED_DIR = Path(__file__).parent.parent / "scraper" / "scraped_data"
 DOCS_DIR = Path(__file__).parent.parent / "docs"
@@ -111,7 +116,7 @@ TRACK_COURSE_DATA = {
 }
 TRACK_NOTES = {t: d["overview"] for t, d in TRACK_COURSE_DATA.items()}
 
-BASE_CSS = """
+BASE_CSS = nar_extras.GUIDE_CSS + """
   :root{
     --paper:#f7f3ea; --paper-card:#fffdf8; --paper-deep:#efe7d3;
     --ink:#1c1a17; --ink-dim:#6b6558; --ink-faint:#a89f8c;
@@ -389,15 +394,21 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
           オッズが反映されると自動的に更新されます。
         </div>"""
 
+    mks = nar_extras.marks(df_race)
+    tags = nar_extras.race_tags(df_race)
     rows_html = []
     for _, row in df_race.iterrows():
         rank = int(row["rank"])
         row_class = "honmei" if rank == 1 else ("taikou" if rank == 2 else "")
-        badge = ""
-        if rank == 1:
-            badge = '<span class="pick-badge">本命</span>'
-        elif rank == 2:
-            badge = '<span class="pick-badge taikou">対抗</span>'
+        u = int(row["馬番"])
+        badge = nar_extras.tag_html(tags.get(u))
+        mk = mks.get(u, "")
+        mmv = row.get("mm_win")
+        vr = row.get("value_ratio")
+        mm_str = (f'<br><span class="mm">込{mmv * 100:.1f}%{" ・妙味" if pd.notna(vr) and vr >= 1.15 else ""}</span>'
+                  if pd.notna(mmv) else "")
+        od = row.get("odds")
+        od_str = f'<br><span class="mm">{od:.1f}倍</span>' if pd.notna(od) and od > 0 else ""
         win_pct = row["p_win"] * 100
         top3_pct = row["p_top3"] * 100
         sei_rei = f"{fmt(row.get('sei'),'')}{fmt(row.get('rei'),'')}" if row.get('sei') else "―"
@@ -413,13 +424,13 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
         rows_html.append(f"""
         <tr class="{row_class}">
           <td>{waku}</td>
-          <td><span class="umaban">{row['馬番']}</span></td>
+          <td><span class="mk">{mk}</span><span class="umaban">{row['馬番']}</span>{od_str}</td>
           <td>{row['horse_name']}{badge}</td>
+          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:{min(win_pct*3,100):.0f}%"></div></div><span class="pct">{win_pct:.1f}%</span></div>{mm_str}</td>
+          <td><div class="bar-cell"><span class="top3-rank">{int(row.get('top3_rank', 0))}位</span><div class="bar-track"><div class="bar-fill" style="width:{top3_pct:.0f}%"></div></div><span class="pct">{top3_pct:.1f}%</span></div></td>
           <td>{sei_rei} / {fmt(row.get('kinryo'))}kg</td>
           <td>{fmt(row.get('jockey'))}</td>
           <td class="odds-cell">直近{avg_ninki_str} / 上3F平均{avg_last3f_str} / 休養{weeks_str} ({n_past_str})</td>
-          <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:{min(win_pct*3,100):.0f}%"></div></div><span class="pct">{win_pct:.1f}%</span></div></td>
-          <td><div class="bar-cell"><span class="top3-rank">{int(row.get('top3_rank', 0))}位</span><div class="bar-track"><div class="bar-fill" style="width:{top3_pct:.0f}%"></div></div><span class="pct">{top3_pct:.1f}%</span></div></td>
         </tr>""")
 
     # 紐(2〜3着候補)ブロック
@@ -467,12 +478,11 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
       </div>
       <table class="pred-table">
         <caption class="table-scroll-hint">← 横にスクロールできます →</caption>
-        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th><th>単勝率</th><th>複勝率</th></tr></thead>
+        <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>AI1着率/込%</th><th>複勝率</th><th>性齢/斤量</th><th>騎手</th><th>直近フォーム</th></tr></thead>
         <tbody>{''.join(rows_html)}</tbody>
       </table>
-      {build_ev_block(race_id)}
+      {nar_extras.race_box_html(df_race)}
       {himo_block}
-      {bet_block}
     </div>"""
 
 
@@ -524,7 +534,7 @@ HOME_TEMPLATE = """<!DOCTYPE html>
 {content}
 </div>
 
-<footer>keiba_ai (地方競馬11場版) · model_nar11v2 (実オッズ特徴量対応) · 毎朝GitHub Actionsで自動更新</footer>
+<footer>keiba_ai (地方競馬11場版) · AI v3(オッズを使わない実力評価)+ 込%(オッズ込み) · 毎朝GitHub Actionsで自動更新</footer>
 
 </body>
 </html>
@@ -563,7 +573,7 @@ RACE_PAGE_TEMPLATE = """<!DOCTYPE html>
 {content}
 </div>
 
-<footer>keiba_ai (地方競馬11場版) · model_nar11v2 (実オッズ特徴量対応)</footer>
+<footer>keiba_ai (地方競馬11場版) · AI v3(オッズを使わない実力評価)+ 込%(オッズ込み)</footer>
 
 </body>
 </html>
@@ -587,10 +597,21 @@ def generate_dashboard(date_str: str) -> Path:
         return out_path
 
     df = pd.read_csv(pred_path)
+    lp = DOCS_DIR / "odds_history" / f"latest_{date_str}.csv"
+    if lp.exists():   # 締切前に取った最新の単勝オッズで込%を計算し直す
+        lo = pd.read_csv(lp, dtype={"race_id": str, "combo": str})
+        lo = lo[lo["bet"] == "単勝"]
+        m = {(r, int(float(c))): o for r, c, o in zip(lo["race_id"], lo["combo"], lo["odds"]) if pd.notna(o)}
+        new = [m.get((str(r), int(u)), o) for r, u, o in zip(df["race_id"], pd.to_numeric(df["馬番"], errors="coerce").fillna(0), df["odds"])]
+        df["odds"] = pd.to_numeric(pd.Series(new, index=df.index), errors="coerce")
+    try:
+        df = nar_extras.add_mm(df)
+    except Exception as e:  # noqa: BLE001
+        print(f"込%の計算に失敗: {e}")
     tracks = sorted(df["track"].unique())
     load_ev(date_str)
 
-    home_sections = [build_ev_summary(df)]
+    home_sections = [nar_extras.home_bets_html(df)]
     for track in tracks:
         df_track = df[df["track"] == track]
         race_nums = sorted(df_track["race_num"].unique())
@@ -606,6 +627,8 @@ def generate_dashboard(date_str: str) -> Path:
             head = df_race.sort_values("rank").iloc[0]
             post_time = fmt(head.get("post_time"), "")
             honmei_name = fmt(head.get("horse_name"), "")
+            ht = nar_extras.race_tags(df_race).get(int(head["馬番"]))
+            honmei_name += nar_extras.tag_html(ht)
             # data_quality_ok列が無い古い予想CSVとの互換のためdefault=True
             dq_ok = bool(head.get("data_quality_ok", True)) if pd.notna(head.get("data_quality_ok", True)) else True
             warn_badge = '<span class="dq-warn" title="出馬表データの取得が不十分な可能性があります">⚠</span>' if not dq_ok else ''
