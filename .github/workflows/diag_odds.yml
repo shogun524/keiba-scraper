@@ -1,0 +1,10 @@
+name: 診断(一時)
+on: workflow_dispatch
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          set +e
+          curl -sL "https://cdnv2.netkeiba.com/img.nar/common/js/race/odds_ranking.js?20210203" -o r.js
+          grep -n -A25 "view_3odds_ranking" r.js | head -60
