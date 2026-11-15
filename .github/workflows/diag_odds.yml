@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          mkdir out; UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+          set +e; mkdir out; UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
           for rid in 202344111511 202544110511 202655110901 202630111001; do
             for t in b8 b7 b1; do curl -sL -A "$UA" "https://nar.netkeiba.com/odds/index.html?type=$t&race_id=$rid" -o out/page_${rid}_$t.html; done
             for t in 8 1; do
