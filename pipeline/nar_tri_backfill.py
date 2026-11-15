@@ -25,17 +25,21 @@ import requests
 
 URL = "https://nar.netkeiba.com/odds/odds_get_form.html?type=b8&race_id={rid}&housiki=c99&ninki={n}"
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-ROW = re.compile(r'<td class="Ninki">\s*(\d+)\s*</td>.*?<ul class="fc">(.*?)</ul>.*?<td class="Name_Odds">\s*([\d,.]+)\s*</td>', re.S)
+ROW = re.compile(r'<td class="Ninki">\s*(\d+)\s*</td>.*?<ul class="fc">(.*?)</ul>.*?(?:class="Name_Odds"|class="Odds[^"]*")>\s*([\d,.]+)\s*<', re.S)
 PAGES = (0, 100, 200)
 
 
 def parse(html):
+    """1行ずつ: 人気・馬番3つ・オッズ(組み合わせの次のセル。発売中は Name_Odds、確定後は Txt_R か span.Odds)"""
     out = []
-    for nk, ul, od in ROW.findall(html):
-        nums = re.findall(r'<span class="UmaBan">\s*(\d+)\s*</span>', ul)
-        if len(nums) == 3:
+    for chunk in html.split('<td class="Ninki">')[1:]:
+        nk = re.match(r"\s*(\d+)", chunk)
+        nums = re.findall(r'<span class="UmaBan">\s*(\d+)\s*</span>', chunk.split("</ul>")[0])
+        rest = chunk.split("</ul>", 1)[1] if "</ul>" in chunk else ""
+        m = re.search(r"</div>\s*</td>\s*<td[^>]*>(?:\s*<span[^>]*>)?\s*([\d,]+\.\d|[\d,]+)\s*<", rest)
+        if nk and len(nums) == 3 and m:
             try:
-                out.append(("-".join(nums), float(od.replace(",", "")), int(nk)))
+                out.append(("-".join(nums), float(m.group(1).replace(",", "")), int(nk.group(1))))
             except ValueError:
                 pass
     return out
