@@ -2,7 +2,7 @@ name: 地方競馬 過去の3連単オッズの取得
 # 過去レースの3連単の最終オッズ(人気上位300組)をリリース nar-tri に貯める。1回 約5時間20分、終わるまで6時間おきに続ける。
 on:
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "17 */6 * * *"   # 11/15: 並列版(nar_tri_fast)で取っている間は止めている
   workflow_dispatch:
     inputs:
       minutes: { description: "取得する分数", default: "315" }

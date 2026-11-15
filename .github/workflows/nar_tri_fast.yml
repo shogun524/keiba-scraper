@@ -1,0 +1,32 @@
+name: 地方競馬 過去の3連単オッズの取得(並列・一時)
+# 11/15 夜: 明日から使うため、残りを4つに分けて同時に取る。結果はリリース nar-tri に _kofn 付きで保存。
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    strategy:
+      fail-fast: false
+      matrix: { k: [0, 1, 2, 3] }
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q pandas requests
+      - name: これまでの分
+        run: |
+          mkdir -p data
+          gh release download nar-data --pattern nar_results.csv --dir data --clobber
+          gh release download nar-tri --pattern nar_tri_done.json --dir data --clobber
+          gh release download nar-tri --pattern "nar_tri_done_${{ matrix.k }}of4.json" --dir data --clobber || true
+          gh release download nar-tri --pattern "nar_tri_odds_${{ matrix.k }}of4.csv.gz" --dir data --clobber || true
+      - name: 取得
+        run: python pipeline/nar_tri_backfill.py data/nar_results.csv data --since 2025-01-01 --minutes 320 --shard ${{ matrix.k }}/4 --done-extra data/nar_tri_done.json
+      - name: 保存
+        if: always()
+        run: |
+          for f in data/nar_tri_odds_${{ matrix.k }}of4.csv.gz data/nar_tri_done_${{ matrix.k }}of4.json data/nar_tri_left_${{ matrix.k }}of4.txt; do [ -f "$f" ] && gh release upload nar-tri "$f" --clobber; done

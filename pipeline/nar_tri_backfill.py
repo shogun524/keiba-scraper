@@ -77,14 +77,24 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--since", default="2025-01-01")
     ap.add_argument("--minutes", type=float, default=320)
+    ap.add_argument("--shard", default="", help="k/n: race_id を n 個に分けた k 番目だけ取る(並列で取るとき)")
+    ap.add_argument("--done-extra", nargs="*", default=[], help="取り終えたとみなす別の done.json(並列分)")
     a = ap.parse_args()
     t_end = time.time() + a.minutes * 60
-    done_p = os.path.join(a.out, "nar_tri_done.json")
-    odds_p = os.path.join(a.out, "nar_tri_odds.csv.gz")
+    suf = f"_{a.shard.replace('/', 'of')}" if a.shard else ""
+    done_p = os.path.join(a.out, f"nar_tri_done{suf}.json")
+    odds_p = os.path.join(a.out, f"nar_tri_odds{suf}.csv.gz")
     done = json.load(open(done_p)) if os.path.exists(done_p) else {}
     r = pd.read_csv(a.results_csv, usecols=["race_id", "race_date"], dtype=str).drop_duplicates("race_id")
     # 新しいレースから。0組だったレースは1回だけ取り直す(-1 = 取り直しても無かった)
-    todo = sorted({x for x in r.loc[r.race_date >= a.since, "race_id"] if done.get(x, 0) == 0}, reverse=True)
+    skip = set()
+    for f in a.done_extra:
+        if os.path.exists(f):
+            skip |= {k for k, v in json.load(open(f)).items() if v}
+    todo = sorted({x for x in r.loc[r.race_date >= a.since, "race_id"] if done.get(x, 0) == 0 and x not in skip}, reverse=True)
+    if a.shard:
+        k, n = map(int, a.shard.split("/"))
+        todo = [x for x in todo if int(x) % n == k]
     print(f"[INFO] 対象 {len(todo)}レース(取り終え {len(done)})", flush=True)
     S = requests.Session()
     S.headers.update({"User-Agent": UA, "Accept-Language": "ja"})
@@ -110,7 +120,7 @@ def main():
     json.dump(done, open(done_p, "w"))
     left = sum(1 for x in todo if done.get(x, 0) == 0 and x not in done)
     print(f"[INFO] 今回 {n_ok}レース分を取得。残り {left}レース", flush=True)
-    open(os.path.join(a.out, "nar_tri_left.txt"), "w").write(str(left))
+    open(os.path.join(a.out, f"nar_tri_left{suf}.txt"), "w").write(str(left))
 
 
 if __name__ == "__main__":
