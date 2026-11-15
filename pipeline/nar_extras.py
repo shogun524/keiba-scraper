@@ -31,7 +31,10 @@ TOP3_MIN = 0.10
 EDGE = 1.2
 _SPEC = None
 TRI = {}          # race_id -> {"1-2-3": 3連単オッズ}(generate_dashboard が最新オッズから入れる)
-TRI_RULES = []    # 3連単の買い方(実際の3連単オッズでの検証後に入れる)
+# 3連単(11/16): 2025〜2026年 約2万3千レースの実際の3連単最終オッズ(人気上位300組)で、合成オッズ2倍以上・13通りの形 × 条件を
+#   2025年で選び2026年で確かめた。両方の年で100%を超える形は無かった(込%と3連単オッズを合わせた出目確率で期待値1以上の組も66〜76%)。
+#   一番ましだったのが N4(参考)。※ 取れたオッズの合計(Σ1/オッズ)が1.1未満のレースは表が欠けているので使わない
+TRI_MIN_INV = 1.1
 
 TAGS = {"普通": ("普通", "tg-ok"), "注意": ("注意", "tg-warn"), "危険": ("危険！", "tg-ng"), "推し": ("推し", "tg-push")}
 
@@ -40,6 +43,9 @@ RULES = [
     dict(id="N2", name="単勝 込%1位(2番人気で◎と違う)", bet="単勝", sel="込%",
          roi="回収率91%(年ごと90〜92%)・勝率30%",
          desc="込%1位が2番人気で、AIの◎と違う馬のとき、その込%1位の単勝"),
+    dict(id="N4", name="3連単 込%4〜6位→1〜3位→1〜3位(参考)", bet="3連単", sel="込%",
+         roi="回収率95〜96%・的中率11%・18点",
+         desc="8頭立て以下で込%1位の1着率が30〜45%のとき。1着に込%4〜6位、2・3着に込%1〜3位(合成オッズ2倍以上のとき)。100%は超えない"),
     dict(id="N3", name="複勝 推し", bet="複勝", sel="込%",
          roi="回収率89〜90%・複勝圏66%",
          desc="◎が「注意/危険」のレースで、推し(込%1位)の複勝"),
@@ -186,6 +192,19 @@ def race_bets(g):
     tags = race_tags(g)
     if m1 in tags and tags[m1][2] == "推し":
         out.append(("N3", f"複勝 {m1}番 {g.loc[i1, 'horse_name']}"))
+    tri = TRI.get(str(g["race_id"].iloc[0])) or {}
+    mm = pd.to_numeric(g["mm_win"])
+    order = [int(um[i]) for i in mm.sort_values(ascending=False).index]
+    if tri and sum(1 / v for v in tri.values() if v) >= TRI_MIN_INV and len(order) <= 8 and len(order) >= 6:
+        q1 = float(mm.max() / mm.sum())
+        if 0.30 <= q1 < 0.45:
+            tks = [f"{a}-{b}-{c}" for a in order[3:6] for b in order[:3] for c in order[:3] if b != c]
+            od = [tri.get(t) for t in tks]
+            if all(od):
+                cp = 1 / sum(1 / o for o in od)
+                if cp >= 2:
+                    out.append(("N4", f"3連単 {','.join(map(str, order[3:6]))} → {','.join(map(str, order[:3]))} → "
+                                      f"{','.join(map(str, order[:3]))}({len(tks)}点・合成{cp:.1f}倍)"))
     return out
 
 
