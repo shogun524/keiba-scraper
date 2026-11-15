@@ -56,6 +56,9 @@ def fetch_race(S, rid):
         else:
             return None   # 通信エラー(次回やり直す)
         got = parse(h)
+        if not got and n == 0 and not getattr(fetch_race, "dumped", False):
+            fetch_race.dumped = True
+            print(f"[DEBUG] {rid} status={r.status_code} len={len(h)} head={h[:300]!r}", flush=True)
         rows += got
         time.sleep(random.uniform(0.7, 1.1))
         if len(got) < 100:
