@@ -604,6 +604,9 @@ def generate_dashboard(date_str: str) -> Path:
         m = {(r, int(float(c))): o for r, c, o in zip(lo["race_id"], lo["combo"], lo["odds"]) if pd.notna(o)}
         new = [m.get((str(r), int(u)), o) for r, u, o in zip(df["race_id"], pd.to_numeric(df["馬番"], errors="coerce").fillna(0), df["odds"])]
         df["odds"] = pd.to_numeric(pd.Series(new, index=df.index), errors="coerce")
+        lt = pd.read_csv(lp, dtype={"race_id": str, "combo": str})
+        lt = lt[lt["bet"] == "3連単"]
+        nar_extras.TRI = {r: dict(zip(g["combo"], g["odds"])) for r, g in lt.groupby("race_id")}   # 3連単の買い目用
     try:
         df = nar_extras.add_mm(df)
     except Exception as e:  # noqa: BLE001

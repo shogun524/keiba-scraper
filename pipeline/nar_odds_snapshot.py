@@ -100,6 +100,18 @@ def main():
                 if not os.path.exists(raw):
                     open(raw, "w", encoding="utf-8").write(html)
             time.sleep(0.5)
+        # 3連単(人気上位300組)。11/15〜 3連単の買い目(合成オッズ・期待値)用
+        try:
+            from nar_tri_backfill import URL as TRI_URL, parse as tri_parse
+            for off in (0, 100, 200):
+                th = http_get(TRI_URL.format(rid=rid, n=off), referer=f"https://nar.netkeiba.com/odds/index.html?type=b8&race_id={rid}")
+                got = tri_parse(th)
+                rows += [(ts, rid, "3連単", c, o, np.nan, nk) for c, o, nk in got]
+                time.sleep(0.5)
+                if len(got) < 100:
+                    break
+        except Exception as e:  # noqa: BLE001
+            print(f"  [{rid}] 3連単 取得失敗: {e}")
         print(f"  [{rid}] 単勝{len(win_odds.get(rid, {}))}頭")
 
     new = pd.DataFrame(rows, columns=HIST_COLS)
@@ -110,7 +122,7 @@ def main():
     latest.to_csv(os.path.join(odir, f"latest_{date_str}.csv"), index=False)
 
     frame = to_board_frame(pred[pred["race_id"].isin(targets)], win_odds)
-    ev = board(frame, latest[latest["bet"] != "単勝"], hist, load_calibration())
+    ev = board(frame, latest[latest["bet"].isin(["馬連", "ワイド"])], hist, load_calibration())
     if not ev.empty:
         # 表示(券種ごとの上位)と採点(EV≧1.0)に使う行だけ残す(全組だと1日数千行になり、gitに溜まるため)
         ev["rk"] = ev.groupby(["race_id", "bet"])["ev"].rank(ascending=False, method="first")

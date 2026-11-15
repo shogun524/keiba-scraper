@@ -30,6 +30,8 @@ MM_PATH = os.path.join(os.path.dirname(HERE), "model", "nar_market_model.json")
 TOP3_MIN = 0.10
 EDGE = 1.2
 _SPEC = None
+TRI = {}          # race_id -> {"1-2-3": 3連単オッズ}(generate_dashboard が最新オッズから入れる)
+TRI_RULES = []    # 3連単の買い方(実際の3連単オッズでの検証後に入れる)
 
 TAGS = {"普通": ("普通", "tg-ok"), "注意": ("注意", "tg-warn"), "危険": ("危険！", "tg-ng"), "推し": ("推し", "tg-push")}
 
