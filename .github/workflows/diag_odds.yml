@@ -8,11 +8,12 @@ jobs:
     steps:
       - run: |
           set +e; mkdir out; UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
-          for rid in 202344111511 202544110511 202655110901 202630111001; do
-            for t in b8 b7 b1; do curl -sL -A "$UA" "https://nar.netkeiba.com/odds/index.html?type=$t&race_id=$rid" -o out/page_${rid}_$t.html; done
-            for t in 8 1; do
-              curl -sL -A "$UA" -e "https://nar.netkeiba.com/odds/index.html?race_id=$rid" "https://nar.netkeiba.com/api/api_get_nar_odds.html?race_id=$rid&type=$t&action=init&compress=0" -o out/api_${rid}_$t.json
-              curl -sL -A "$UA" -e "https://nar.netkeiba.com/odds/index.html?race_id=$rid" "https://nar.netkeiba.com/api/api_get_jra_odds.html?race_id=$rid&type=$t&action=init&compress=0" -o out/api2_${rid}_$t.json
+          for rid in 202344111511 202544110511 202630111001 202442100101; do
+            for q in "housiki=c99" "housiki=c0&jiku=1" "jiku=1" "housiki=c99&ninki=1"; do
+              f=out/form_${rid}_$(echo $q | tr '=&' '__').html
+              curl -sL -A "$UA" -e "https://nar.netkeiba.com/odds/index.html?type=b8&race_id=$rid" "https://nar.netkeiba.com/odds/odds_get_form.html?type=b8&race_id=$rid&$q" -o $f
+              echo "== $f $(wc -c < $f) td=$(grep -o '<td' $f | wc -l)"
+              sed 's/<[^>]*>/ /g' $f | tr -s ' \n' ' ' | head -c 400; echo
             done
           done
           ls -la out; for f in out/api*; do echo "== $f"; head -c 300 $f; echo; done
