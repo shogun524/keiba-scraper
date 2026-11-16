@@ -405,7 +405,8 @@ def build_race_card_html(race_id: str, race_num: int, df_race: pd.DataFrame) -> 
         mk = mks.get(u, "")
         mmv = row.get("mm_win")
         vr = row.get("value_ratio")
-        mm_str = (f'<br><span class="mm">込{mmv * 100:.1f}%{" ・妙味" if pd.notna(vr) and vr >= 1.15 else ""}</span>'
+        est = bool(row.get("mm_est")) if "mm_est" in row and pd.notna(row.get("mm_est")) else False
+        mm_str = (f'<br><span class="mm">込{mmv * 100:.1f}%{"(推定)" if est else ""}{" ・妙味" if pd.notna(vr) and vr >= 1.15 and not est else ""}</span>'
                   if pd.notna(mmv) else "")
         od = row.get("odds")
         od_str = f'<br><span class="mm">{od:.1f}倍</span>' if pd.notna(od) and od > 0 else ""
