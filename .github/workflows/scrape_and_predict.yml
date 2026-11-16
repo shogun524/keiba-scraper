@@ -15,6 +15,10 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   scrape-and-predict:
     runs-on: ubuntu-latest
@@ -110,3 +114,9 @@ jobs:
 
           echo "5回リトライしてもpushできませんでした。次回の実行、または手動再実行(workflow_dispatch)をお試しください。"
           exit 1
+
+      - name: 締切前オッズ更新(常駐)を起動
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run nar_day_loop.yml || true

@@ -1,0 +1,32 @@
+name: 地方競馬 締切前オッズ更新(常駐)
+# 10分おきの定期実行が間引かれて動かないので、1つのジョブの中で10分おきに回す。約5時間半で区切り、22時前なら自分を起動し直す。
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "13 1 * * *"    # JST 10:13 起動(予備)
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: nar-day-loop
+  cancel-in-progress: false
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: 依存パッケージ
+        run: |
+          pip install -r requirements.txt duckdb scipy requests beautifulsoup4 lxml
+          playwright install --with-deps chromium
+      - name: 過去の結果
+        run: |
+          mkdir -p data
+          gh release download nar-data --pattern nar_results.csv --dir data --clobber || true
+      - name: 10分おきに更新
+        run: bash scripts/nar_day_loop.sh

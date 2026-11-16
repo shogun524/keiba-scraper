@@ -31,9 +31,9 @@ TOP3_MIN = 0.10
 EDGE = 1.2
 _SPEC = None
 TRI = {}          # race_id -> {"1-2-3": 3連単オッズ}(generate_dashboard が最新オッズから入れる)
-# 3連単(11/16): 2025〜2026年 約2万3千レースの実際の3連単最終オッズ(人気上位300組)で、合成オッズ2倍以上・13通りの形 × 条件を
-#   2025年で選び2026年で確かめた。両方の年で100%を超える形は無かった(込%と3連単オッズを合わせた出目確率で期待値1以上の組も66〜76%)。
-#   一番ましだったのが N4(参考)。※ 取れたオッズの合計(Σ1/オッズ)が1.1未満のレースは表が欠けているので使わない
+# 3連単(11/16): 2025〜2026年 約2万3千レースの実際の3連単最終オッズ(人気上位300組)。全レース買う形はどれも100%未満だが、
+#   印のフォーメーション × レース条件(万馬券率・頭数・◎の妙味など)では、偶然版(条件をシャッフル)より明らかに多く100%超えが残った → tri_bets
+#   ※ 取れたオッズの合計(Σ1/オッズ)が1.1未満のレースは表が欠けているので使わない
 TRI_MIN_INV = 1.1
 
 TAGS = {"普通": ("普通", "tg-ok"), "注意": ("注意", "tg-warn"), "危険": ("危険！", "tg-ng"), "推し": ("推し", "tg-push")}
@@ -43,9 +43,17 @@ RULES = [
     dict(id="N2", name="単勝 込%1位(2番人気で◎と違う)", bet="単勝", sel="込%",
          roi="回収率91%(年ごと90〜92%)・勝率30%",
          desc="込%1位が2番人気で、AIの◎と違う馬のとき、その込%1位の単勝"),
-    dict(id="N4", name="3連単 込%4〜6位→1〜3位→1〜3位(参考)", bet="3連単", sel="込%",
-         roi="回収率95〜96%・的中率11%・18点",
-         desc="8頭立て以下で込%1位の1着率が30〜45%のとき。1着に込%4〜6位、2・3着に込%1〜3位(合成オッズ2倍以上のとき)。100%は超えない"),
+    dict(id="B1", name="3連単 ◎○▲△BOX(24点)", bet="3連単", sel="AI・万馬券率",
+         roi="回収率124〜125%・的中率31〜34%(大きい配当3本を除いても90〜93%)",
+         desc="8頭立て以下で、3連単の万馬券率(オッズ100倍以上の組の割合)が20〜30%のレース"),
+    dict(id="B4", name="3連単 ◎○▲△BOX(24点)", bet="3連単", sel="AI・込%・万馬券率",
+         roi="回収率116〜157%・的中率30%", desc="込%1位の1着率45〜60%で、万馬券率20〜30%のレース"),
+    dict(id="B7", name="3連単 ◎○▲△BOX(24点)", bet="3連単", sel="AI・万馬券率",
+         roi="回収率113〜134%・的中率27%", desc="万馬券率20〜30%で、◎の妙味(込%÷市場)が0.9〜1.0のレース"),
+    dict(id="B9", name="3連単 △☆→◎○→◎○▲(8点)", bet="3連単", sel="AI・万馬券率",
+         roi="回収率110〜114%・的中率6.5%", desc="8頭立て以下で、万馬券率30〜40%のレース(穴頭)"),
+    dict(id="B8", name="3連単 △☆→◎○→◎○▲(8点)", bet="3連単", sel="AI",
+         roi="回収率110%・的中率4〜5%", desc="◎と○のAIの1着率の差が15〜30ptで、◎の妙味が0.9〜1.0のレース(穴頭)"),
     dict(id="N3", name="複勝 推し", bet="複勝", sel="込%",
          roi="回収率89〜90%・複勝圏66%",
          desc="◎が「注意/危険」のレースで、推し(込%1位)の複勝"),
@@ -192,20 +200,46 @@ def race_bets(g):
     tags = race_tags(g)
     if m1 in tags and tags[m1][2] == "推し":
         out.append(("N3", f"複勝 {m1}番 {g.loc[i1, 'horse_name']}"))
-    tri = TRI.get(str(g["race_id"].iloc[0])) or {}
-    mm = pd.to_numeric(g["mm_win"])
-    order = [int(um[i]) for i in mm.sort_values(ascending=False).index]
-    if tri and sum(1 / v for v in tri.values() if v) >= TRI_MIN_INV and len(order) <= 8 and len(order) >= 6:
-        q1 = float(mm.max() / mm.sum())
-        if 0.30 <= q1 < 0.45:
-            tks = [f"{a}-{b}-{c}" for a in order[3:6] for b in order[:3] for c in order[:3] if b != c]
-            od = [tri.get(t) for t in tks]
-            if all(od):
-                cp = 1 / sum(1 / o for o in od)
-                if cp >= 2:
-                    out.append(("N4", f"3連単 {','.join(map(str, order[3:6]))} → {','.join(map(str, order[:3]))} → "
-                                      f"{','.join(map(str, order[:3]))}({len(tks)}点・合成{cp:.1f}倍)"))
+    out += tri_bets(g)
     return out
+
+
+def tri_bets(g):
+    """3連単の推奨(B1/B4/B7/B9/B8 のうち当てはまる最初の1つ)。
+    2025〜2026年の実際の3連単オッズで、条件をシャッフルした「偶然版」(両年110%以上 0個)と比べて残った形(本物 8個)。
+    条件は確定オッズで測ったもの。締切前のオッズでは条件の当てはまりが少し変わる"""
+    rid = str(g["race_id"].iloc[0])
+    tri = TRI.get(rid) or {}
+    inv = sum(1 / v for v in tri.values() if v)
+    if not tri or inv < TRI_MIN_INV or len(g) < 6:
+        return []
+    man = sum(1 / v for v in tri.values() if v and v >= 100) / inv
+    um = _u(g)
+    ai = pd.to_numeric(g["p_win"], errors="coerce")
+    order = [int(um[i]) for i in ai.sort_values(ascending=False).index]
+    a = ai.sort_values(ascending=False).values / ai.sum()
+    h = order[0]
+    hi = ai.idxmax()
+    vr = float(g.loc[hi, "mm_win"] / g.loc[hi, "mkt_win"]) if g.loc[hi, "mkt_win"] else 1
+    q1 = float(pd.to_numeric(g["mm_win"]).max() / pd.to_numeric(g["mm_win"]).sum())
+    n = len(g)
+    m4 = order[:4]
+    box = [f"{x}-{y}-{z}" for x in m4 for y in m4 for z in m4 if len({x, y, z}) == 3]
+    ura = [f"{x}-{y}-{z}" for x in order[3:5] for y in order[:2] for z in order[:3] if len({x, y, z}) == 3]
+    cands = [("B1", box, 0.2 <= man < 0.3 and n <= 8), ("B4", box, 0.45 <= q1 < 0.6 and 0.2 <= man < 0.3),
+             ("B7", box, 0.2 <= man < 0.3 and 0.9 <= vr < 1.0), ("B9", ura, 0.3 <= man < 0.4 and n <= 8),
+             ("B8", ura, 0.15 <= a[0] - a[1] < 0.3 and 0.9 <= vr < 1.0)]
+    for key, tks, ok in cands:
+        if not ok:
+            continue
+        od = [tri.get(t) for t in tks]
+        known = [o for o in od if o]
+        cp = 1 / sum(1 / o for o in known) if known else None
+        if cp and cp >= 2:
+            form = (f"{','.join(map(str, m4))} BOX" if key in ("B1", "B4", "B7")
+                    else f"{','.join(map(str, order[3:5]))} → {','.join(map(str, order[:2]))} → {','.join(map(str, order[:3]))}")
+            return [(key, f"3連単 {form}({len(tks)}点・合成{cp:.1f}倍・万馬券率{man:.0%})")]
+    return []
 
 
 def tag_html(t):
