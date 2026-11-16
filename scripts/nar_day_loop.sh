@@ -4,8 +4,16 @@ set -u
 END=$(( $(date +%s) + ${LOOP_MINUTES:-330} * 60 ))
 while [ "$(date +%s)" -lt "$END" ]; do
   H=$(TZ=Asia/Tokyo date +%H)
-  if [ "$H" -ge 22 ]; then echo "22時を過ぎたので終了"; break; fi
   DATE=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+  # 夜〜朝(22時〜10時)はオッズ更新をしない。6時40分を過ぎて今日の出馬表がまだなら、出馬表の取得を起こす(定期実行が間引かれるため。11/17)
+  if [ "$H" -ge 22 ] || [ "$H" -lt 10 ]; then
+    HM=$(TZ=Asia/Tokyo date +%H%M)
+    if [ "$HM" -ge 0640 ] && [ "$H" -lt 10 ] && [ ! -f "scraper/scraped_data/${DATE}_racecards_raw.jsonl" ] && [ "${KICKED:-}" != "$DATE" ]; then
+      git pull -q --rebase -X theirs || true
+      if [ ! -f "scraper/scraped_data/${DATE}_racecards_raw.jsonl" ]; then gh workflow run scrape_and_predict.yml && echo "出馬表の取得を起動" && KICKED=$DATE; fi
+    fi
+    sleep 600; continue
+  fi
   echo "=== $(TZ=Asia/Tokyo date +%H:%M) 更新 ==="
   git pull -q --rebase -X theirs || { git rebase --abort; git fetch -q origin main; git reset -q --hard origin/main; }
   (cd scraper && python rescrape_near_deadline.py --date "$DATE" --window-min 10) || echo "[WARN] 再取得に失敗"
@@ -25,5 +33,5 @@ while [ "$(date +%s)" -lt "$END" ]; do
   fi
   sleep 540
 done
-# まだ22時前ならもう一度起動する(GITHUB_TOKEN の workflow_dispatch は新しい実行を作れる)
-if [ "$(TZ=Asia/Tokyo date +%H)" -lt 21 ]; then gh workflow run nar_day_loop.yml && echo "次の回を起動"; fi
+# 次の回を起動する(夜も止めずにつなぎ、朝の出馬表の取得を起こすため。GITHUB_TOKEN の workflow_dispatch は新しい実行を作れる)
+gh workflow run nar_day_loop.yml && echo "次の回を起動"
