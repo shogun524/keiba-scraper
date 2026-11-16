@@ -292,7 +292,7 @@ def home_bets_html(df):
         r = meta[i]
         body = f'<ul style="font-size:12.5px;line-height:1.9;padding-left:18px;margin:4px 0;">{"".join(items)}</ul>' if items \
             else '<div class="sub" style="margin:2px 0 6px;">今日は対象なし(オッズが出たレースから判定)</div>'
-        secs += (f'<div style="margin-top:8px;"><b>{r["name"]}</b><span class="rule-badge">選ぶのは込%</span>'
+        secs += (f'<div style="margin-top:8px;"><b>{r["name"]}</b><span class="rule-badge">選ぶのは{r["sel"]}</span>'
                  f'<span class="rule-badge">{r["roi"]}</span><div class="sub">{r["desc"]}</div>{body}</div>')
     return (f'<section class="track-block"><div class="track-block-head"><h2>AI買い目</h2>'
             f'<span style="font-size:11px;color:var(--ink-dim);">2025〜26年の検証で全体の平均よりましな買い方</span></div>'
