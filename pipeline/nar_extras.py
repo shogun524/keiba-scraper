@@ -56,6 +56,8 @@ RULES = [
          roi="南関東 回収率137〜196%・的中率3%", desc="南関東で、込%1位の1着率が25〜35%(混戦)のレース。2着に無印を置く穴狙い"),
     dict(id="M5", name="3連単 全→無印(AI6〜8位)→○(約28点・南関東)", bet="3連単", sel="AI",
          roi="南関東 回収率176〜186%・的中率3.5%(大きい配当頼み)", desc="南関東で、◎と○のAIの1着率の差が5pt未満のレース"),
+    dict(id="U1", name="馬単 ○→無印(AI6〜8位)(3点・試験)", bet="馬単", sel="AI",
+         roi="南関東以外 回収率112〜118%・的中率5%", desc="南関東以外の9〜10頭立てで、◎のAIの1着率が20〜30%のレース"),
     dict(id="N3", name="複勝 推し", bet="複勝", sel="込%",
          roi="回収率89〜90%・複勝圏66%",
          desc="◎が「注意/危険」のレースで、推し(込%1位)の複勝"),
@@ -203,6 +205,15 @@ def race_bets(g):
     if m1 in tags and tags[m1][2] == "推し":
         out.append(("N3", f"複勝 {m1}番 {g.loc[i1, 'horse_name']}"))
     out += tri_bets(g)
+    # U1(11/16・試験): 南関東以外・9〜10頭・◎のAI1着率20〜30% → 馬単 ○ → 無印(AI6〜8位)(3点)
+    #   2025年1558レース 回収率118%・2026年1380レース 112%(的中率5%、大きい配当3本を除いても84〜85%)。
+    #   ただ「9〜10頭だけ」「◎20〜30%だけ」では73〜83%で、組み合わせのときだけ良い形なので試験扱い
+    rid = str(g["race_id"].iloc[0])
+    if rid[4:6] not in ("42", "43", "44", "45") and 9 <= len(g) <= 10:
+        ai = pd.to_numeric(g["p_win"], errors="coerce")
+        if not ai.isna().any() and 0.2 <= ai.max() / ai.sum() < 0.3:
+            order = [int(um[i]) for i in ai.sort_values(ascending=False).index]
+            out.append(("U1", f"馬単 {order[1]} → {','.join(map(str, order[5:8]))}(3点)"))
     return out
 
 
