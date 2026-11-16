@@ -52,6 +52,10 @@ RULES = [
          roi="南関東以外 回収率124〜149%・的中率27%", desc="南関東以外・万馬券率20〜30%で、◎の妙味(込%÷市場)が0.9〜1.0のレース"),
     dict(id="B9", name="3連単 △☆→◎○→◎○▲(8点)", bet="3連単", sel="AI・万馬券率",
          roi="南関東以外 回収率127〜130%・的中率6.5%", desc="南関東以外・8頭立て以下で、万馬券率30〜40%のレース(穴頭)"),
+    dict(id="M4", name="3連単 ○▲→無印(AI6〜8位)→△☆(12点・南関東)", bet="3連単", sel="AI・込%",
+         roi="南関東 回収率137〜196%・的中率3%", desc="南関東で、込%1位の1着率が25〜35%(混戦)のレース。2着に無印を置く穴狙い"),
+    dict(id="M5", name="3連単 全→無印(AI6〜8位)→○(約28点・南関東)", bet="3連単", sel="AI",
+         roi="南関東 回収率176〜186%・的中率3.5%(大きい配当頼み)", desc="南関東で、◎と○のAIの1着率の差が5pt未満のレース"),
     dict(id="N3", name="複勝 推し", bet="複勝", sel="込%",
          roi="回収率89〜90%・複勝圏66%",
          desc="◎が「注意/危険」のレースで、推し(込%1位)の複勝"),
@@ -209,11 +213,11 @@ def tri_bets(g):
     rid = str(g["race_id"].iloc[0])
     tri = TRI.get(rid) or {}
     inv = sum(1 / v for v in tri.values() if v)
+    if rid[4:6] in ("42", "43", "44", "45"):
+        return minami_bets(g, tri)
     if not tri or inv < TRI_MIN_INV or len(g) < 6:
         return []
-    # 11/16: B1/B4/B7/B9 は南関東(浦和・船橋・大井・川崎)以外でだけ効いた(南関東では回収率14〜48%)。南関東では出さない
-    if rid[4:6] in ("42", "43", "44", "45"):
-        return []
+    # 11/16: B1/B4/B7/B9 は南関東(浦和・船橋・大井・川崎)以外でだけ効いた(南関東では回収率14〜48%)
     man = sum(1 / v for v in tri.values() if v and v >= 100) / inv
     um = _u(g)
     ai = pd.to_numeric(g["p_win"], errors="coerce")
@@ -240,6 +244,34 @@ def tri_bets(g):
             form = (f"{','.join(map(str, m4))} BOX" if key in ("B1", "B4", "B7")
                     else f"{','.join(map(str, order[3:5]))} → {','.join(map(str, order[:2]))} → {','.join(map(str, order[:3]))}")
             return [(key, f"3連単 {form}({len(tks)}点・合成{cp:.1f}倍・万馬券率{man:.0%})")]
+    return []
+
+
+def minami_bets(g, tri):
+    """南関東用の3連単(11/16): 無印(AIの6位以下)を2着に入れる形。南関東だけで、無印を含む形 × 条件を総当たりし、
+    偶然版(条件をシャッフル)より多く残った中から点数が少なめで大きい配当を除いても崩れにくいもの
+      M4 込%1位の1着率25〜35%: ○▲ → AI6〜8位 → △☆(12点)  2025年137%・2026年196%(的中率3%・大きい配当3本を除くと71〜85%)
+      M5 ◎と○のAIの1着率の差5pt未満: 全 → AI6〜8位 → ○(約28点)  2025年186%・2026年176%(的中率3.5%・除くと46〜66%)"""
+    um = _u(g)
+    ai = pd.to_numeric(g["p_win"], errors="coerce")
+    if len(g) < 8 or ai.isna().any():
+        return []
+    order = [int(um[i]) for i in ai.sort_values(ascending=False).index]
+    a = ai.sort_values(ascending=False).values / ai.sum()
+    q1 = float(pd.to_numeric(g["mm_win"]).max() / pd.to_numeric(g["mm_win"]).sum())
+    F = lambda A, B, C: [f"{x}-{y}-{z}" for x in A for y in B for z in C if len({x, y, z}) == 3]  # noqa: E731
+    cands = [("M4", F(order[1:3], order[5:8], order[3:5]), 0.25 <= q1 < 0.35,
+              f"{','.join(map(str, order[1:3]))} → {','.join(map(str, order[5:8]))} → {','.join(map(str, order[3:5]))}"),
+             ("M5", F(order, order[5:8], order[1:2]), a[0] - a[1] < 0.05,
+              f"全 → {','.join(map(str, order[5:8]))} → {order[1]}")]
+    for key, tks, ok, form in cands:
+        if not ok:
+            continue
+        known = [tri.get(t) for t in tks if tri.get(t)]
+        cp = 1 / sum(1 / o for o in known) if known else None
+        if cp is not None and cp < 2:
+            continue
+        return [(key, f"3連単 {form}({len(tks)}点{'・合成' + format(cp, '.1f') + '倍' if cp else ''})")]
     return []
 
 
