@@ -110,8 +110,16 @@ def add_mm(df, odds_col="odds"):
         return df
     for rid, g in df.groupby(df["race_id"].astype(str)):
         o = pd.to_numeric(g[odds_col], errors="coerce")
-        if o.isna().any() or (o < 1).any() or len(g) < 2:
+        o = o.where(o >= 1)
+        miss = o.isna()
+        if len(g) < 2 or miss.sum() > max(1, len(g) * 0.3):
             continue
+        if miss.any():
+            # 11/16: 一部の馬だけ単勝オッズがまだ無い(0.0表示)と、レース全体の込%が出なかった。
+            # 3割以下の欠けなら、AIの1着率から仮のオッズ(0.8÷1着率)を入れて計算する(その馬の込%は推定)
+            pw = pd.to_numeric(g["p_win"], errors="coerce").clip(lower=0.005)
+            o = o.fillna(0.8 / (pw / pw.sum()))
+            df.loc[g.index[miss.values], "mm_est"] = True
         x = pd.DataFrame({f: (g["mf_" + f].values if "mf_" + f in g.columns else np.nan) for f in sp["feats"]}, index=g.index)
         x["race_id"] = rid
         x["umaban"] = pd.to_numeric(g["馬番"], errors="coerce").values
