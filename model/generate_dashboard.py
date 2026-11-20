@@ -615,6 +615,14 @@ def generate_dashboard(date_str: str) -> Path:
     tracks = sorted(df["track"].unique())
     load_ev(date_str)
 
+    try:   # M6(南関東・試験)の判定を残す/実績を出す
+        mlog = nar_extras.log_m6(df, DOCS_DIR / "nar_m6_log.json")
+        done = [e for e in mlog.values() if e.get("ok") and "ret" in e]
+        if done:
+            pts = 30 * len(done); ret = sum(e["ret"] for e in done)
+            nar_extras.M6_SUMMARY = dict(races=len(done), hits=sum(1 for e in done if e["ret"] > 0), roi=ret / (pts * 100))
+    except Exception as e:  # noqa: BLE001
+        print(f"M6 ログに失敗: {e}")
     home_sections = [nar_extras.home_bets_html(df)]
     for track in tracks:
         df_track = df[df["track"] == track]

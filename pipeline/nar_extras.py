@@ -52,6 +52,9 @@ RULES = [
          roi="南関東以外 回収率124〜149%・的中率27%", desc="南関東以外・万馬券率20〜30%で、◎の妙味(込%÷市場)が0.9〜1.0のレース"),
     dict(id="B9", name="3連単 △☆→◎○→◎○▲(8点)", bet="3連単", sel="AI・万馬券率",
          roi="南関東以外 回収率127〜130%・的中率6.5%", desc="南関東以外・8頭立て以下で、万馬券率30〜40%のレース(穴頭)"),
+    dict(id="M6", name="3連単 込%1位→3着内率上位6頭(30点・南関東・試験)", bet="3連単", sel="込%・AI3着内率・合成オッズ",
+         roi="南関東 回収率104〜132%・的中率28〜37%(年80〜95レース・試験中)",
+         desc="南関東で込%1位の1着率が50%以上、かつ30点の合成オッズが2.5倍以上のときだけ(強い本命なのにその馬1着の3連単が安くないレース)"),
     dict(id="M4", name="3連単 ○▲→無印(AI6〜8位)→△☆(12点・南関東)", bet="3連単", sel="AI・込%",
          roi="南関東 回収率137〜196%・的中率3%", desc="南関東で、込%1位の1着率が25〜35%(混戦)のレース。2着に無印を置く穴狙い"),
     dict(id="M5", name="3連単 全→無印(AI6〜8位)→○(約28点・南関東)", bet="3連単", sel="AI",
@@ -266,6 +269,60 @@ def tri_bets(g):
     return []
 
 
+M6_COMP = 2.5
+M6_SEEN = {}      # race_id -> 判定の中身(ログ用)
+M6_SUMMARY = None  # 試験成績(generate_dashboard がログから入れる)
+
+
+def log_m6(df, path, now=None):
+    """M6 の判定を docs/nar_m6_log.json に残す。発走前のレースだけ上書きし、発走後は最後の判定で固定(=実際に買えた判定)"""
+    import datetime as _dt
+    now = now or _dt.datetime.now(_dt.timezone(_dt.timedelta(hours=9))).replace(tzinfo=None)
+    try:
+        log = json.load(open(path, encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        log = {}
+    for rid, g in df.groupby(df["race_id"].astype(str)):
+        if rid[4:6] not in ("42", "43", "44", "45") or rid not in M6_SEEN:
+            continue
+        h = g.iloc[0]
+        try:
+            post = _dt.datetime.strptime(f'{h["date"]} {h["post_time"]}', "%Y-%m-%d %H:%M")
+        except Exception:  # noqa: BLE001
+            continue
+        if now >= post:
+            continue
+        e = dict(M6_SEEN[rid]); e.update(date=str(h["date"]), track=str(h["track"]), R=int(h["race_num"]),
+                                         post=str(h["post_time"]), ts=now.strftime("%H:%M"))
+        log[rid] = e
+    json.dump(log, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    return log
+
+
+
+def _m6(g, tri, um):
+    """M6(11/20・試験): 南関東・込%1位の1着率50%以上 → 込%1位を1着固定、2・3着にAIの3着内率の上位6頭(30点)。
+    30点の合成オッズが2.5倍以上のときだけ買う。2025〜26年の確定オッズで 2025年104%(95R)・2026年132%(81R)。
+    合成の下限を上げるほど両年とも上がる(2.0倍 82/97% → 3.0倍 140/199%)。最大配当1本を除くと88/102%。大井・船橋◎、浦和×。
+    ※ 3連単オッズの表が欠けている(Σ1/オッズ<1.1)と合成が高く出てしまうので使わない"""
+    inv = sum(1 / v for v in tri.values() if v)
+    mm = pd.to_numeric(g["mm_win"], errors="coerce")
+    t3 = pd.to_numeric(g.get("p_top3"), errors="coerce") if "p_top3" in g else None
+    if not tri or inv < TRI_MIN_INV or mm.isna().all() or t3 is None or t3.isna().all() or len(g) < 7:
+        return []
+    q1 = float(mm.max() / mm.sum())
+    if q1 < 0.5:
+        return []
+    head = int(um[mm.idxmax()])
+    sub = [int(um[i]) for i in t3.sort_values(ascending=False).index if int(um[i]) != head][:6]
+    tks = [f"{head}-{b}-{c}" for b in sub for c in sub if b != c]
+    cp = 1 / sum(1 / (tri.get(t) or 1000.0) for t in tks)
+    M6_SEEN[str(g["race_id"].iloc[0])] = dict(cp=round(cp, 2), q1=round(q1, 3), head=head, sub=sub, ok=cp >= M6_COMP, tickets=tks)
+    if cp < M6_COMP:
+        return []
+    return [("M6", f"3連単 {head} → {','.join(map(str, sub))} → {','.join(map(str, sub))}(30点・合成{cp:.1f}倍・込1位{q1:.0%})")]
+
+
 def minami_bets(g, tri):
     """南関東用の3連単(11/16): 無印(AIの6位以下)を2着に入れる形。南関東だけで、無印を含む形 × 条件を総当たりし、
     偶然版(条件をシャッフル)より多く残った中から点数が少なめで大きい配当を除いても崩れにくいもの
@@ -283,6 +340,9 @@ def minami_bets(g, tri):
               f"{','.join(map(str, order[1:3]))} → {','.join(map(str, order[5:8]))} → {','.join(map(str, order[3:5]))}"),
              ("M5", F(order, order[5:8], order[1:2]), a[0] - a[1] < 0.05,
               f"全 → {','.join(map(str, order[5:8]))} → {order[1]}")]
+    m6 = _m6(g, tri, um)
+    if m6:
+        return m6
     for key, tks, ok, form in cands:
         if not ok:
             continue
@@ -344,6 +404,10 @@ def home_bets_html(df):
         r = meta[i]
         body = f'<ul style="font-size:12.5px;line-height:1.9;padding-left:18px;margin:4px 0;">{"".join(items)}</ul>' if items \
             else '<div class="sub" style="margin:2px 0 6px;">今日は対象なし(オッズが出たレースから判定)</div>'
+        if i == "M6" and M6_SUMMARY:
+            sm = M6_SUMMARY
+            body = (f'<div class="sub" style="margin:2px 0;">試験の実績(11/21〜・締切前の最後の判定で買った場合): '
+                    f'{sm["races"]}レース・的中{sm["hits"]}・回収率{sm["roi"]:.0%}</div>') + body
         secs += (f'<div style="margin-top:8px;"><b>{r["name"]}</b><span class="rule-badge">選ぶのは{r["sel"]}</span>'
                  f'<span class="rule-badge">{r["roi"]}</span><div class="sub">{r["desc"]}</div>{body}</div>')
     return (f'<section class="track-block"><div class="track-block-head"><h2>AI買い目</h2>'
