@@ -15,6 +15,11 @@ while [ "$(date +%s)" -lt "$END" ]; do
     sleep 600; continue
   fi
   echo "=== $(TZ=Asia/Tokyo date +%H:%M) 更新 ==="
+  # M6(南関東・試験)の結果づけ: 1日1回、前日までの払戻を取ってきてログに書き込む(11/20)
+  if [ "${TALLIED:-}" != "$DATE" ] && [ -f docs/nar_m6_log.json ]; then
+    gh release download nar-data --pattern nar_payouts.csv --dir /tmp --clobber 2>/dev/null && python pipeline/nar_m6_tally.py docs/nar_m6_log.json /tmp/nar_payouts.csv || true
+    TALLIED=$DATE
+  fi
   git pull -q --rebase -X theirs || { git rebase --abort; git fetch -q origin main; git reset -q --hard origin/main; }
   (cd scraper && python rescrape_near_deadline.py --date "$DATE" --window-min 10) || echo "[WARN] 再取得に失敗"
   JSONL="scraper/scraped_data/${DATE}_racecards_raw.jsonl"
