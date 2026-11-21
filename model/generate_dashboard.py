@@ -678,6 +678,12 @@ def generate_dashboard(date_str: str) -> Path:
     html = HOME_TEMPLATE.format(
         date=date_str, generated_at=generated_at, base_css=BASE_CSS, content="".join(home_sections),
     )
+    # 11/21: トップはJRA週末AI予想と同じ形。前の形は today.html に残す
+    (DOCS_DIR / "today.html").write_text(html, encoding="utf-8")
+    try:
+        html = build_jra_index(df, date_str)
+    except Exception as e:  # noqa: BLE001
+        print(f"JRA形のトップページを作れませんでした({e})。前の形で出します")
     out_path.write_text(html, encoding="utf-8")
     generate_courses_page()
     generate_triple_umatan_page(df, date_str)
@@ -1118,6 +1124,159 @@ def generate_courses_page():
     (DOCS_DIR / "courses.html").write_text(html, encoding="utf-8")
 
 
+# ---------------------------------------------------------------- JRAと同じ形のトップページ(11/21)
+WAKU_C = {1: ("#FFFFFF", "#2A2118"), 2: ("#1A1A1A", "#FFFFFF"), 3: ("#D0342C", "#FFFFFF"), 4: ("#1E5FA8", "#FFFFFF"),
+          5: ("#EFC94C", "#2A2118"), 6: ("#2E8B57", "#FFFFFF"), 7: ("#E8792B", "#FFFFFF"), 8: ("#E8A0BC", "#2A2118")}
+
+
+def _waku(w):
+    try:
+        w = int(w)
+    except (TypeError, ValueError):
+        return '<span class="waku waku-none">-</span>'
+    bg, fg = WAKU_C.get(w, ("#999", "#fff"))
+    bd = "border:1px solid #C8B98A;" if w == 1 else ""
+    return f'<span class="waku" style="background:{bg};color:{fg};{bd}">{w}</span>'
+
+
+def _vt(r):
+    v = r.get("value_ratio")
+    if v is None or pd.isna(v):
+        return ""
+    if v >= 1.3:
+        return '<span class="vt vt-big">妙味大</span>'
+    if v >= 1.15:
+        return '<span class="vt vt-ok">妙味あり</span>'
+    if v <= 0.8:
+        return '<span class="vt vt-bad">過剰人気</span>'
+    return '<span class="vt vt-mid">妥当</span>'
+
+
+def _nar_card(df_race):
+    import jra_layout as J
+    g = df_race.copy()
+    g["_u"] = pd.to_numeric(g["馬番"], errors="coerce")
+    g = g.sort_values("p_win", ascending=False)
+    h = g.iloc[0]
+    mks = nar_extras.marks(g)
+    tags = nar_extras.race_tags(g)
+    tot = pd.to_numeric(g["p_win"], errors="coerce").sum() or 1
+    tot3 = pd.to_numeric(g.get("p_top3"), errors="coerce").sum() if "p_top3" in g else 0
+    n = len(g)
+    body = ""
+    for k, (_, r) in enumerate(g.iterrows()):
+        u = int(r["_u"]) if pd.notna(r["_u"]) else 0
+        mk = mks.get(u, "")
+        cell = f'<span class="mark">{mk}</span>' if mk else f'<span class="rk">{k + 1}</span>'
+        t = tags.get(u)
+        if t:
+            cell += f'<br><span class="htag {"tg-push" if t[2] == "推し" else {"tg-ok": "tg-ok"}.get(t[1], t[1])}">{t[0]}</span>'
+        odds = pd.to_numeric(r.get("odds"), errors="coerce")
+        nk = pd.to_numeric(r.get("ninki"), errors="coerce")
+        od = (f'{odds:.1f}倍' + (f'<br><small class="plc">{int(nk)}番人気</small>' if pd.notna(nk) else "")) if pd.notna(odds) and odds > 0 else '<span class="na">オッズ待ち</span>'
+        pw = float(r["p_win"]) / tot * 100
+        p3 = (float(r["p_top3"]) / tot3 * min(3, n) * 100) if tot3 and pd.notna(r.get("p_top3")) else None
+        mm = r.get("mm_win")
+        mmh = (f'<br><small class="mm{" mm-hi" if pd.notna(r.get("value_ratio")) and r["value_ratio"] >= 1.15 else ""}">'
+               f'込{float(mm) * 100:.0f}%{"(推定)" if r.get("mm_est") is True else ""}</small>') if mm is not None and pd.notna(mm) else ""
+        sub = " ".join(x for x in [str(r.get("jockey") or ""), f'{r.get("sei", "")}{"" if pd.isna(r.get("rei")) else int(r["rei"])}' if pd.notna(r.get("rei")) else "",
+                                   f'{r.get("kinryo")}kg' if pd.notna(r.get("kinryo")) else ""] if x and x != "nan")
+        body += f"""
+        <tr class="{"top-pick" if k == 0 else ""}">
+          <td class="c">{cell}</td>
+          <td class="c ubc">{_waku(r.get("waku"))}<b class="ubn">{u}</b></td>
+          <td class="horse">{J.esc(r.get("horse_name", ""))}<br><small class="sub">{J.esc(sub)}</small></td>
+          <td class="r od">{od}</td>
+          <td class="r pct"><b>{pw:.1f}</b><small>%</small>{f'<br><small class="sub">3着内{p3:.0f}%</small>' if p3 is not None else ""}{mmh}</td>
+          <td class="c">{_vt(r)}</td>
+        </tr>"""
+    track, rn = h["track"], int(h["race_num"])
+    cond = " ".join(str(x) for x in [h.get("surface"), f'{int(h["distance"])}m' if pd.notna(h.get("distance")) else "", h.get("baba_condition") if pd.notna(h.get("baba_condition")) else ""] if x and str(x) != "nan")
+    sub = f'{track} <span class="post-time">発走 {fmt(h.get("post_time"), "")}</span> <small>{J.esc(cond)}</small>'
+    rid = str(h["race_id"])
+    tri = nar_extras.TRI.get(rid) or {}
+    chips = ""
+    if tri:
+        inv = sum(1 / v for v in tri.values() if v)
+        if inv >= nar_extras.TRI_MIN_INV:
+            man = sum(1 / v for v in tri.values() if v and v >= 100) / inv
+            chips = f'<p class="manbaken">万馬券率(3連単) <b class="{"hi" if man >= 0.4 else ("lo" if man < 0.2 else "")}">{man * 100:.0f}%</b></p>'
+    bets = nar_extras.race_bets(g) if nar_extras._has_mm(g) else []
+    rmeta = {r["id"]: r for r in nar_extras.RULES}
+    aib = ""
+    if bets:
+        aib = '<div class="aibet">' + "".join(
+            f'<div class="aibet-body"><span class="aibet-tag">対象</span> <span class="aibet-reason">{J.esc(rmeta[i]["name"])}</span><br><b>{b}</b></div>'
+            for i, b in bets) + '</div>'
+    tp = nar_extras.trio_plan(g) if nar_extras._has_mm(g) else None
+    extra = ""
+    if tp:
+        e = f'{tp["axis"]} → {"・".join(map(str, tp["second"]))} → {"・".join(map(str, tp["third"]))}({len(tp["tickets"])}点)'
+        ed = " / ".join(nar_extras.fmt_t(t) for t in tp["edge"]) or "なし"
+        extra = (f'<p class="trioline">3連複 的中重視: <b>{e}</b> <small>(的中率67%・回収率77%)</small><br>'
+                 f'<span class="tr-e2">回収重視: <b>{ed}</b></span> <small>(的中率16%・回収率90%)</small></p>')
+    return J.race_card(rn, J.esc(h.get("race_name") if pd.notna(h.get("race_name")) else f"{rn}R"), sub, chips, aib,
+                       [("印", 26), ("馬番", 50), ("馬名", None), ("単勝", 58), ("AI<br><small>込</small>", 50), ("妙味", 54)],
+                       body, extra_html=extra, link=f"races/{track}_{rn}.html")
+
+
+def build_jra_index(df, date_str):
+    import jra_layout as J
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
+    hm = now.strftime("%H:%M")
+    venues, n_odds, n_all = [], 0, 0
+    tracks = sorted(df["track"].unique(), key=lambda t: str(df[df.track == t]["post_time"].min()))
+    for vi, t in enumerate(tracks):
+        dt = df[df.track == t]
+        races = []
+        for rn in sorted(dt["race_num"].unique()):
+            g = dt[dt.race_num == rn]
+            n_all += 1
+            if pd.to_numeric(g["odds"], errors="coerce").notna().any():
+                n_odds += 1
+            bets = nar_extras.race_bets(g) if nar_extras._has_mm(g) else []
+            races.append((int(rn), "★" if bets else "", _nar_card(g)))
+        venues.append((t, races))
+    meta = f'<b>{date_str}</b> ・ 更新 {now.strftime("%Y-%m-%d %H:%M")} ・ オッズ取得 {n_odds}/{n_all}レース'
+    guide = """<details class="guide"><summary>このサイトの見方</summary><ul>
+  <li><b>◎・AI%</b> … AI(オッズを使わない。地方競馬の過去データで学習)が見た1着率。3着内も同じAI。</li>
+  <li><b>込%</b> … AIとオッズを合わせた1着率(オッズが出てから)。一番当たる数字。(推定)はオッズが一部欠けている馬。</li>
+  <li><b>妙味</b> … 込%がオッズの見込みより高い馬=妙味あり(1.15倍以上)、低い馬=過剰人気。</li>
+  <li><b>普通・注意・危険・推し</b> … ◎に付く一言と、込%1位の推し。</li>
+  <li><b>AI買い目</b> … 過去の検証で回収率が出たルール(★のレース)。M6などは試験中。</li>
+  <li>オッズは締切前に10分おきに更新。「詳しく」でレースの詳しいページへ。</li>
+</ul></details>"""
+    # 今日のAI買い目(JRAと同じ形: ルールごとに 対象レース / 条件 / 検証成績。対象なしのルールは1行にまとめる)
+    by = {r["id"]: [] for r in nar_extras.RULES}
+    for vi, t in enumerate(tracks):
+        dt = df[df.track == t]
+        for rn in sorted(dt["race_num"].unique()):
+            g = dt[dt.race_num == rn]
+            if not nar_extras._has_mm(g):
+                continue
+            for i, b in nar_extras.race_bets(g):
+                by.setdefault(i, []).append((fmt(g.iloc[0].get("post_time"), ""), t, int(rn), vi, b))
+    blocks, empty = "", []
+    for r in nar_extras.RULES:
+        items = sorted(by.get(r["id"], []))
+        if not items:
+            nm = r["name"].split("(")[0]
+            if nm not in empty:
+                empty.append(nm)
+            continue
+        lis = "".join(f'<li><span class="aibet-tag">対象</span> <a href="?v={vi}&r={rn}"><b>{t}{rn}R</b></a> {pt}<br>'
+                      f'<span class="aibet-buy">{b}</span></li>' for pt, t, rn, vi, b in items)
+        blocks += (f'<div class="rule"><h3 class="aibet-h3">{J.esc(r["name"])}<span class="roi-b">{J.esc(r.get("roi", ""))}</span></h3>'
+                   f'<details class="why"><summary>条件</summary><p class="aibet-note">{J.esc(r.get("desc", ""))}</p></details><ul>{lis}</ul></div>')
+    if empty:
+        blocks += f'<p class="aibet-none">今日は対象なし: {"・".join(empty)}</p>'
+    top = guide + f'<section class="aibet-summary"><h2>今日のAI買い目</h2>{blocks}</section>'
+    links = [("トリプル馬単", "triple.html"), ("成績", "performance.html"), ("競馬場", "courses.html")]
+    return J.page("地方競馬AI予想", meta, venues, top, links,
+                  "https://github.com/shogun524/keiba-scraper/actions/workflows/nar_day_loop.yml",
+                  footer_html="<p>確率は過去のデータからの推定で、的中や回収を保証するものではありません。馬券の最終判断はご自身でお願いします。</p>")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="日次予想ダッシュボードHTML生成")
     parser.add_argument("--date", default=datetime.date.today().isoformat())
@@ -1125,3 +1284,4 @@ if __name__ == "__main__":
 
     out = generate_dashboard(args.date)
     print(f"生成: {out}")
+
