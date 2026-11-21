@@ -687,6 +687,11 @@ def generate_dashboard(date_str: str) -> Path:
     out_path.write_text(html, encoding="utf-8")
     generate_courses_page()
     generate_triple_umatan_page(df, date_str)
+    try:   # 11/21: ほかのページもJRAと同じ見た目のヘッダーに(成績ページは夜のジョブが作るので、ここで毎回そろえる)
+        import jra_layout
+        jra_layout.skin_nar_docs(str(DOCS_DIR))
+    except Exception as e:  # noqa: BLE001
+        print(f"ページの見た目をそろえられませんでした: {e}")
     return out_path
 
 
