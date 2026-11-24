@@ -18,9 +18,9 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from nar_features import CATEGORICAL, FEATURES  # noqa: E402
+from nar_features import CATEGORICAL, FEATURES, EXTRA  # noqa: E402
 
-FEATS = [f for f in FEATURES if f not in CATEGORICAL and f not in ("race_no", "is_graded")]
+FEATS = [f for f in FEATURES if f not in CATEGORICAL and f not in EXTRA and f not in ("race_no", "is_graded")]
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "model", "nar_market_model.json")
 
 

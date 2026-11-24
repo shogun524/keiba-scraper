@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(ROOT, "scraper"))
-from nar_features import CATEGORICAL, FEATURES, build  # noqa: E402
+from nar_features import CATEGORICAL, FEATURES, build, add_extra  # noqa: E402
 from shutuba_past_parser import parse_race_card  # noqa: E402
 from nar_market_model import FEATS as MM_FEATS  # noqa: E402  込%モデルが使う要素(予想CSVに mf_ 付きで残す)
 
@@ -85,14 +85,16 @@ def predict(records: list[dict], results_csv: str = DEFAULT_RESULTS):
         pd.concat([hist, ent.astype(str).replace({"None": None, "nan": None})], ignore_index=True).to_csv(path, index=False)
         con = duckdb.connect()
         build(con, path)
-        f = con.execute("SELECT * FROM features WHERE is_entry").df()
+        f = add_extra(con.execute("SELECT * FROM features").df())
+        f = f[f["is_entry"].fillna(False).astype(bool)]
     if f.empty:
         return None
     for c in CATEGORICAL:
         f[c] = f[c].astype("category")
     mw, mt = lgb.Booster(model_file=MODEL_WIN), lgb.Booster(model_file=MODEL_TOP3)
-    f["pw"] = mw.predict(f[FEATURES])
-    f["pt"] = mt.predict(f[FEATURES])
+    # モデルが学習したときの特徴量だけを使う(再学習の前後でも動くように)
+    f["pw"] = mw.predict(f[mw.feature_name()])
+    f["pt"] = mt.predict(f[mt.feature_name()])
     out = {}
     for rid, g in f.groupby("race_id"):
         g = g.copy()
