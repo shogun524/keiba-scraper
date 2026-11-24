@@ -1206,6 +1206,11 @@ def _nar_card(df_race):
         if inv >= nar_extras.TRI_MIN_INV:
             man = sum(1 / v for v in tri.values() if v and v >= 100) / inv
             chips = f'<p class="manbaken">万馬券率(3連単) <b class="{"hi" if man >= 0.4 else ("lo" if man < 0.2 else "")}">{man * 100:.0f}%</b></p>'
+    try:
+        import urawa_bets
+        chips += urawa_bets.html(g)
+    except Exception as e:  # noqa: BLE001
+        print(f"[WARN] 浦和の条件別おすすめ: {e}")
     bets = nar_extras.race_bets(g) if nar_extras._has_mm(g) else []
     rmeta = {r["id"]: r for r in nar_extras.RULES}
     aib = ""
