@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# 11/25: 途中で固まって止まったので、各コマンドに timeout を付けた
+# 11/25: 再学習の push とぶつかって止まった(git の名前未設定で merge できず)。名前を設定し、各コマンドに timeout も付けた
 # 地方: 10分おきのオッズ更新を1つのジョブの中で回す(定期実行が間引かれて動かないため。11/16)
 set -u
+# 11/25: 名前が未設定だと、push がぶつかったときの merge/rebase が失敗して更新が止まる
+git config user.name "keiba-ai-bot"; git config user.email "bot@example.com"
 END=$(( $(date +%s) + ${LOOP_MINUTES:-330} * 60 ))
 while [ "$(date +%s)" -lt "$END" ]; do
   H=$(TZ=Asia/Tokyo date +%H)
