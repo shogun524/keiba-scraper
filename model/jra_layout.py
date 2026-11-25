@@ -268,6 +268,7 @@ def race_card(num, title, sub_html="", chips_html="", aibet_html="", cols=None, 
 
 
 FOLD_CSS = """
+.lockline{font-size:11px;color:#666;margin:2px 0;}
   details.fold > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px; }
   details.fold > summary::-webkit-details-marker { display: none; }
   details.fold > summary::before { content: "▶"; font-size: .7em; color: #8A7F6E; transition: transform .15s; }

@@ -608,6 +608,10 @@ def generate_dashboard(date_str: str) -> Path:
         lt = pd.read_csv(lp, dtype={"race_id": str, "combo": str})
         lt = lt[lt["bet"] == "3連単"]
         nar_extras.TRI = {r: dict(zip(g["combo"], g["odds"])) for r, g in lt.groupby("race_id")}   # 3連単の買い目用
+    try:   # 11/25: 発走30分前のオッズで買い目を固定(直前のオッズは動きが激しく買い目が変わりすぎるため)
+        df = lock_odds(df, date_str)
+    except Exception as e:  # noqa: BLE001
+        print(f"オッズの固定に失敗: {e}")
     try:
         df = nar_extras.add_mm(df)
     except Exception as e:  # noqa: BLE001
@@ -1157,6 +1161,57 @@ def _vt(r):
     return '<span class="vt vt-mid">妥当</span>'
 
 
+LOCK_MIN = 30   # 発走の何分前のオッズで買い目を固定するか
+LOCKED = {}     # race_id -> 固定した時刻(HH:MM)
+
+
+def lock_odds(df, date_str):
+    """発走 LOCK_MIN 分前を過ぎたレースは、そのとき(最初に過ぎた更新)の単勝・3連単オッズを docs/_nar_lock.json に残し、
+    以後はそのオッズで込%・買い目を出す(直前のオッズに振り回されないように)。"""
+    import json
+    path = DOCS_DIR / "_nar_lock.json"
+    try:
+        lk = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        lk = {}
+    if lk.get("date") != date_str:
+        lk = {"date": date_str, "races": {}}
+    jst = datetime.timezone(datetime.timedelta(hours=9))
+    now = datetime.datetime.now(jst)
+    df = df.copy()
+    df["odds"] = pd.to_numeric(df["odds"], errors="coerce")
+    df["odds_now"] = df["odds"]
+    changed = False
+    for rid, g in df.groupby(df["race_id"].astype(str)):
+        try:
+            hh, mm = map(int, str(g["post_time"].iloc[0]).split(":")[:2])
+        except ValueError:
+            continue
+        post = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(hour=hh, minute=mm, tzinfo=jst)
+        if now < post - datetime.timedelta(minutes=LOCK_MIN):
+            continue
+        e = lk["races"].get(rid)
+        if e is None:
+            if now > post or g["odds"].isna().all():   # 発走後に初めて見た/オッズが無い → 固定しない
+                continue
+            e = {"at": now.strftime("%H:%M"),
+                 "win": {str(int(u)): float(o) for u, o in zip(pd.to_numeric(g["馬番"], errors="coerce"), g["odds"]) if pd.notna(u) and pd.notna(o)},
+                 "tri": {k: float(v) for k, v in (nar_extras.TRI.get(rid) or {}).items() if v}}
+            lk["races"][rid] = e
+            changed = True
+        idx = g.index
+        u = pd.to_numeric(df.loc[idx, "馬番"], errors="coerce")
+        df.loc[idx, "odds"] = [e["win"].get(str(int(x)), o) if pd.notna(x) else o for x, o in zip(u, df.loc[idx, "odds"])]
+        df.loc[idx, "ninki"] = df.loc[idx, "odds"].rank(method="min")
+        if e.get("tri"):
+            nar_extras.TRI[rid] = e["tri"]
+        LOCKED[rid] = e["at"]
+    if changed:
+        path.write_text(json.dumps(lk, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"[INFO] 買い目を固定したレース {len(LOCKED)}")
+    return df
+
+
 def _nar_card(df_race):
     import jra_layout as J
     g = df_race.copy()
@@ -1178,7 +1233,9 @@ def _nar_card(df_race):
             cell += f'<br><span class="htag {"tg-push" if t[2] == "推し" else {"tg-ok": "tg-ok"}.get(t[1], t[1])}">{t[0]}</span>'
         odds = pd.to_numeric(r.get("odds"), errors="coerce")
         nk = pd.to_numeric(r.get("ninki"), errors="coerce")
-        od = (f'{odds:.1f}倍' + (f'<br><small class="plc">{int(nk)}番人気</small>' if pd.notna(nk) else "")) if pd.notna(odds) and odds > 0 else '<span class="na">オッズ待ち</span>'
+        on = pd.to_numeric(r.get("odds_now"), errors="coerce")
+        od = (f'{odds:.1f}倍' + (f'<br><small class="plc">{int(nk)}番人気</small>' if pd.notna(nk) else "")
+              + (f'<br><small class="sub">今{on:.1f}</small>' if pd.notna(on) and on > 0 and abs(on - odds) >= 0.05 else "")) if pd.notna(odds) and odds > 0 else '<span class="na">オッズ待ち</span>'
         pw = float(r["p_win"]) / tot * 100
         p3 = (float(r["p_top3"]) / tot3 * min(3, n) * 100) if tot3 and pd.notna(r.get("p_top3")) else None
         mm = r.get("mm_win")
@@ -1200,7 +1257,8 @@ def _nar_card(df_race):
     sub = f'{track} <span class="post-time">発走 {fmt(h.get("post_time"), "")}</span> <small>{J.esc(cond)}</small>'
     rid = str(h["race_id"])
     tri = nar_extras.TRI.get(rid) or {}
-    chips = ""
+    chips = (f'<p class="lockline">🔒 {LOCKED[rid]}のオッズで買い目を固定(発走{LOCK_MIN}分前)</p>' if rid in LOCKED
+             else f'<p class="lockline">買い目は発走{LOCK_MIN}分前のオッズで固定します(それまでは変わります)</p>')
     if tri:
         inv = sum(1 / v for v in tri.values() if v)
         if inv >= nar_extras.TRI_MIN_INV:
@@ -1254,7 +1312,7 @@ def build_jra_index(df, date_str):
   <li><b>妙味</b> … 込%がオッズの見込みより高い馬=妙味あり(1.15倍以上)、低い馬=過剰人気。</li>
   <li><b>普通・注意・危険・推し</b> … ◎に付く一言と、込%1位の推し。</li>
   <li><b>AI買い目</b> … 過去の検証で回収率が出たルール(★のレース)。M6などは試験中。</li>
-  <li>オッズは締切前に10分おきに更新。「詳しく」でレースの詳しいページへ。</li>
+  <li>オッズは締切前に10分おきに更新。<b>買い目は発走30分前のオッズで固定</b>(直前のオッズは動きが激しいため)。表の単勝も固定したオッズ。「詳しく」でレースの詳しいページへ。</li>
 </ul></details>"""
     # 今日のAI買い目(JRAと同じ形: ルールごとに 対象レース / 条件 / 検証成績。対象なしのルールは1行にまとめる)
     by = {r["id"]: [] for r in nar_extras.RULES}
