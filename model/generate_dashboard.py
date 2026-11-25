@@ -1163,6 +1163,7 @@ def _vt(r):
 
 LOCK_MIN = 30   # 発走の何分前のオッズで買い目を固定するか
 LOCKED = {}     # race_id -> 固定した時刻(HH:MM)
+PAST = set()    # 発走を過ぎたレース
 
 
 def lock_odds(df, date_str):
@@ -1188,6 +1189,8 @@ def lock_odds(df, date_str):
         except ValueError:
             continue
         post = datetime.datetime.strptime(date_str, "%Y-%m-%d").replace(hour=hh, minute=mm, tzinfo=jst)
+        if now > post:
+            PAST.add(rid)
         if now < post - datetime.timedelta(minutes=LOCK_MIN):
             continue
         e = lk["races"].get(rid)
@@ -1258,7 +1261,7 @@ def _nar_card(df_race):
     rid = str(h["race_id"])
     tri = nar_extras.TRI.get(rid) or {}
     chips = (f'<p class="lockline">🔒 {LOCKED[rid]}のオッズで買い目を固定(発走{LOCK_MIN}分前)</p>' if rid in LOCKED
-             else f'<p class="lockline">買い目は発走{LOCK_MIN}分前のオッズで固定します(それまでは変わります)</p>')
+             else f'<p class="lockline">買い目は発走{LOCK_MIN}分前のオッズで固定します(それまでは変わります)</p>' if rid not in PAST else "")
     if tri:
         inv = sum(1 / v for v in tri.values() if v)
         if inv >= nar_extras.TRI_MIN_INV:
